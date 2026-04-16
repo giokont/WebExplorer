@@ -5,957 +5,814 @@
 <title>Web Explorer</title>
 <style>
 :root {
-  --bg: #1c1c1c;
-  --bg2: #242424;
-  --bg3: #2c2c2c;
-  --bg4: #343434;
-  --border: #3a3a3a;
-  --border2: #444;
-  --text: #e0e0e0;
-  --text2: #aaa;
-  --text3: #777;
-  --accent: #0078d4;
-  --accent-hover: #1a8fe0;
-  --accent-bg: rgba(0,120,212,0.15);
-  --danger: #c42b1c;
-  --selected: #1a3a5c;
-  --selected-border: #0078d4;
-  --hover: #2e2e2e;
-  --tab-active: #1c1c1c;
-  --tab-inactive: #2a2a2a;
-  --radius: 6px;
-  --radius-sm: 4px;
+  --bg:       #1c1c1c;
+  --bg2:      #242424;
+  --bg3:      #2c2c2c;
+  --bg4:      #343434;
+  --bg5:      #3c3c3c;
+  --border:   rgba(255,255,255,0.08);
+  --border2:  rgba(255,255,255,0.14);
+  --text:     #e8e8e8;
+  --text2:    #a0a0a0;
+  --text3:    #666;
+  --accent:   #0078d4;
+  --accent2:  #1a8fe0;
+  --accent-bg:rgba(0,120,212,0.12);
+  --danger:   #c42b1c;
+  --selected: rgba(0,120,212,0.18);
+  --sel-bdr:  rgba(0,120,212,0.6);
+  --hover:    rgba(255,255,255,0.05);
+  --radius:   6px;
+  --rsm:      4px;
 }
-
-* { margin:0; padding:0; box-sizing:border-box; }
-body { font-family:'Segoe UI',system-ui,sans-serif; background:var(--bg); color:var(--text); height:100vh; display:flex; flex-direction:column; overflow:hidden; font-size:13px; }
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);height:100vh;display:flex;flex-direction:column;overflow:hidden;font-size:13px;}
 
 /* ── TITLEBAR ── */
-#titlebar {
-  background:var(--bg2);
-  border-bottom:1px solid var(--border);
-  padding:0 12px;
-  display:flex;
-  align-items:center;
-  height:40px;
-  gap:8px;
-  flex-shrink:0;
-  -webkit-app-region:drag;
+#titlebar{
+  height:36px;background:var(--bg2);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 10px;gap:8px;flex-shrink:0;
 }
-#titlebar .logo { font-size:15px; font-weight:600; color:var(--text); display:flex; align-items:center; gap:6px; -webkit-app-region:no-drag; }
-#titlebar .logo span { color:var(--accent); }
-#titlebar-spacer { flex:1; }
-.tb-icon-btn {
-  background:none; border:none; color:var(--text2); cursor:pointer;
-  padding:5px 8px; border-radius:var(--radius-sm); font-size:14px;
-  transition:background 0.12s, color 0.12s; -webkit-app-region:no-drag;
-}
-.tb-icon-btn:hover { background:var(--bg4); color:var(--text); }
-.tb-icon-btn.active { color:var(--accent); }
+.logo{font-size:14px;font-weight:600;display:flex;align-items:center;gap:5px;letter-spacing:-0.2px;}
+.logo-accent{color:var(--accent);}
+#titlebar-gap{flex:1;}
+.tl-btn{background:none;border:none;color:var(--text2);cursor:pointer;padding:4px 7px;border-radius:var(--rsm);font-size:13px;line-height:1;transition:background .12s,color .12s;}
+.tl-btn:hover{background:var(--bg4);color:var(--text);}
+.tl-btn.on{color:var(--accent);}
 
 /* ── TOOLBAR ── */
-#toolbar {
-  background:var(--bg2);
-  border-bottom:1px solid var(--border);
-  padding:5px 10px;
-  display:flex;
-  align-items:center;
-  gap:6px;
-  flex-shrink:0;
+#toolbar{
+  height:38px;background:var(--bg2);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 8px;gap:2px;flex-shrink:0;
 }
-.tb-btn {
-  background:var(--bg3); border:1px solid var(--border2); color:var(--text);
-  padding:4px 10px; border-radius:var(--radius-sm); cursor:pointer; font-size:12px;
-  display:flex; align-items:center; gap:4px; transition:background 0.12s; white-space:nowrap; flex-shrink:0;
+.tb-btn{
+  background:none;border:none;color:var(--text2);cursor:pointer;
+  padding:4px 8px;border-radius:var(--rsm);font-size:12px;
+  display:flex;align-items:center;gap:5px;transition:background .12s,color .12s;
+  white-space:nowrap;
 }
-.tb-btn:hover { background:var(--bg4); }
-.tb-btn svg { width:14px; height:14px; flex-shrink:0; }
-.tb-sep { width:1px; background:var(--border); height:20px; margin:0 2px; flex-shrink:0; }
+.tb-btn:hover{background:var(--bg4);color:var(--text);}
+.tb-btn .ico{font-size:14px;line-height:1;}
+.tb-sep{width:1px;background:var(--border2);height:18px;margin:0 4px;flex-shrink:0;}
+.tb-btn.primary{background:var(--accent-bg);color:var(--accent);border:1px solid rgba(0,120,212,0.25);}
+.tb-btn.primary:hover{background:var(--accent);color:#fff;}
+#btn-paste-tb{display:none;}
 
-/* ── PANELS CONTAINER ── */
-#panels {
-  display:flex;
-  flex:1;
-  overflow:hidden;
-  gap:0;
-}
+/* ── MAIN ── */
+#main{display:flex;flex:1;overflow:hidden;}
 
-/* ── PANEL RESIZER ── */
-#resizer {
-  width:4px;
-  background:var(--border);
-  cursor:col-resize;
-  flex-shrink:0;
-  transition:background 0.12s;
+/* ── SIDEBAR ── */
+#sidebar{
+  width:190px;background:var(--bg2);border-right:1px solid var(--border);
+  padding:6px 0;overflow-y:auto;flex-shrink:0;
 }
-#resizer:hover, #resizer.dragging { background:var(--accent); }
+.side-sec{margin-bottom:2px;}
+.side-lbl{font-size:10px;color:var(--text3);padding:8px 14px 3px;text-transform:uppercase;letter-spacing:.8px;}
+.side-item{
+  padding:5px 10px;cursor:pointer;display:flex;align-items:center;gap:7px;
+  border-radius:var(--rsm);margin:1px 5px;font-size:12px;color:var(--text2);
+  transition:background .1s;white-space:nowrap;overflow:hidden;
+}
+.side-item:hover{background:var(--hover);color:var(--text);}
+.side-item.active{background:var(--accent-bg);color:var(--accent);}
+.side-ico{font-size:13px;flex-shrink:0;}
+
+/* ── PANELS ── */
+#panels{flex:1;display:flex;overflow:hidden;}
+#resizer{width:3px;background:var(--border);cursor:col-resize;flex-shrink:0;transition:background .15s;}
+#resizer:hover,#resizer.on{background:var(--accent);}
 
 /* ── PANEL ── */
-.panel {
-  display:flex;
-  flex-direction:column;
-  overflow:hidden;
-  flex:1;
-  min-width:200px;
-}
+.panel{display:flex;flex-direction:column;overflow:hidden;flex:1;min-width:180px;}
+.panel.active-panel .panel-header{background:var(--bg2);}
 
-/* ── TABS ── */
-.tab-bar {
-  background:var(--bg3);
-  border-bottom:1px solid var(--border);
-  display:flex;
-  align-items:flex-end;
-  padding:0 6px;
-  gap:2px;
-  flex-shrink:0;
-  overflow-x:auto;
-  scrollbar-width:none;
+/* ── TAB BAR ── */
+.tabbar{
+  background:var(--bg3);border-bottom:1px solid var(--border);
+  display:flex;align-items:flex-end;padding:0 6px;gap:1px;
+  flex-shrink:0;overflow-x:auto;scrollbar-width:none;
 }
-.tab-bar::-webkit-scrollbar { display:none; }
+.tabbar::-webkit-scrollbar{display:none;}
+.tab{
+  background:transparent;border:1px solid transparent;border-bottom:none;
+  padding:5px 10px;border-radius:var(--rsm) var(--rsm) 0 0;
+  cursor:pointer;font-size:11px;white-space:nowrap;
+  display:flex;align-items:center;gap:5px;max-width:150px;
+  color:var(--text2);position:relative;bottom:-1px;transition:background .1s,color .1s;
+}
+.tab:hover{background:var(--bg4);color:var(--text);}
+.tab.on{background:var(--bg2);color:var(--text);border-color:var(--border);border-bottom-color:var(--bg2);z-index:1;}
+.tab-name{overflow:hidden;text-overflow:ellipsis;max-width:90px;}
+.tab-x{font-size:10px;color:var(--text3);padding:1px 2px;border-radius:3px;line-height:1;}
+.tab-x:hover{background:var(--bg5);color:var(--text);}
+.tab-add{background:none;border:none;color:var(--text3);padding:3px 7px;cursor:pointer;font-size:15px;line-height:1;border-radius:var(--rsm);margin-bottom:2px;}
+.tab-add:hover{color:var(--text);background:var(--bg4);}
 
-.tab {
-  background:var(--tab-inactive);
-  border:1px solid var(--border);
-  border-bottom:none;
-  padding:5px 10px 5px 10px;
-  border-radius:var(--radius-sm) var(--radius-sm) 0 0;
-  cursor:pointer;
-  font-size:12px;
-  white-space:nowrap;
-  display:flex;
-  align-items:center;
-  gap:5px;
-  max-width:160px;
-  color:var(--text2);
-  position:relative;
-  bottom:-1px;
-  transition:background 0.1s;
+/* ── BREADCRUMB ── */
+.breadcrumb-wrap{
+  height:34px;background:var(--bg2);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 6px;gap:4px;flex-shrink:0;
 }
-.tab:hover { background:var(--bg4); color:var(--text); }
-.tab.active { background:var(--tab-active); color:var(--text); border-bottom:1px solid var(--tab-active); z-index:1; }
-.tab .tab-name { overflow:hidden; text-overflow:ellipsis; max-width:100px; }
-.tab .tab-close {
-  font-size:11px; color:var(--text3); cursor:pointer; padding:0 2px;
-  border-radius:3px; line-height:1;
-}
-.tab .tab-close:hover { background:var(--bg4); color:var(--text); }
-.tab-new {
-  background:none; border:none; color:var(--text3);
-  padding:4px 8px; cursor:pointer; font-size:16px; line-height:1;
-  border-radius:var(--radius-sm); transition:color 0.12s;
-  margin-bottom:2px;
-}
-.tab-new:hover { color:var(--text); background:var(--bg4); }
+.nav-btn{background:none;border:none;color:var(--text3);cursor:pointer;padding:3px 5px;border-radius:var(--rsm);font-size:13px;line-height:1;transition:background .1s,color .1s;}
+.nav-btn:hover:not(:disabled){background:var(--bg4);color:var(--text);}
+.nav-btn:disabled{opacity:.3;cursor:default;}
 
-/* ── ADDRESS BAR ── */
-.addr-bar-wrap {
-  background:var(--bg2);
-  border-bottom:1px solid var(--border);
-  padding:5px 8px;
-  display:flex;
-  align-items:center;
-  gap:5px;
-  flex-shrink:0;
+.breadcrumb{
+  flex:1;display:flex;align-items:center;gap:1px;
+  background:var(--bg3);border:1px solid var(--border);border-radius:var(--rsm);
+  padding:3px 6px;overflow:hidden;cursor:default;min-width:0;
+  transition:background .1s;
 }
-.nav-btn {
-  background:none; border:none; color:var(--text2); cursor:pointer;
-  padding:4px 6px; border-radius:var(--radius-sm); font-size:13px; line-height:1;
-  transition:background 0.12s;
+.breadcrumb:hover{background:var(--bg4);}
+.breadcrumb.editing{display:none;}
+.breadcrumb-input{
+  flex:1;background:var(--bg3);border:1px solid var(--accent);border-radius:var(--rsm);
+  padding:3px 8px;color:var(--text);font-size:12px;outline:none;
+  display:none;
 }
-.nav-btn:hover:not(:disabled) { background:var(--bg4); color:var(--text); }
-.nav-btn:disabled { opacity:0.3; cursor:default; }
-.addr-bar {
-  flex:1; background:var(--bg3); border:1px solid var(--border);
-  border-radius:var(--radius-sm); padding:4px 8px; color:var(--text);
-  font-size:12px; outline:none; font-family:inherit;
+.breadcrumb-input.editing{display:block;}
+.bc-part{
+  font-size:12px;color:var(--text2);cursor:pointer;padding:1px 3px;border-radius:3px;
+  white-space:nowrap;flex-shrink:0;transition:background .1s,color .1s;
 }
-.addr-bar:focus { border-color:var(--accent); }
-.search-wrap { position:relative; }
-.search-input {
-  background:var(--bg3); border:1px solid var(--border);
-  border-radius:var(--radius-sm); padding:4px 8px 4px 26px;
-  color:var(--text); font-size:12px; outline:none; width:160px;
+.bc-part:hover{background:var(--accent-bg);color:var(--accent);}
+.bc-part.last{color:var(--text);font-weight:500;}
+.bc-sep{color:var(--text3);font-size:10px;flex-shrink:0;padding:0 1px;}
+
+.search-box{
+  background:var(--bg3);border:1px solid var(--border);border-radius:var(--rsm);
+  padding:3px 8px 3px 24px;color:var(--text);font-size:12px;outline:none;
+  width:150px;transition:border-color .15s,width .2s;position:relative;
 }
-.search-input:focus { border-color:var(--accent); width:200px; }
-.search-icon { position:absolute; left:7px; top:50%; transform:translateY(-50%); color:var(--text3); font-size:12px; pointer-events:none; }
+.search-box:focus{border-color:var(--accent);width:190px;}
+.search-wrap{position:relative;flex-shrink:0;}
+.search-ico{position:absolute;left:7px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:11px;pointer-events:none;}
 
 /* ── FILE LIST ── */
-.file-list-wrap { flex:1; overflow-y:auto; overflow-x:hidden; }
-.file-table { width:100%; border-collapse:collapse; }
-.file-table thead th {
-  background:var(--bg3); padding:6px 10px; text-align:left;
-  color:var(--text2); font-weight:400; border-bottom:1px solid var(--border);
-  position:sticky; top:0; cursor:pointer; user-select:none; z-index:2; font-size:12px;
+.list-wrap{flex:1;overflow-y:auto;overflow-x:hidden;}
+.ftable{width:100%;border-collapse:collapse;}
+.ftable thead th{
+  background:var(--bg3);padding:5px 10px;text-align:left;
+  color:var(--text2);font-weight:400;border-bottom:1px solid var(--border);
+  position:sticky;top:0;cursor:pointer;user-select:none;z-index:2;font-size:11px;
 }
-.file-table thead th:hover { color:var(--text); }
-.sort-arrow { font-size:10px; margin-left:3px; }
-.file-table tbody tr {
-  border-bottom:1px solid rgba(58,58,58,0.5);
-  cursor:pointer; transition:background 0.08s;
-}
-.file-table tbody tr:hover { background:var(--hover); }
-.file-table tbody tr.selected { background:var(--selected); outline:1px solid var(--selected-border); }
-.file-table tbody tr.drag-over-row { background:rgba(0,120,212,0.25) !important; outline:2px dashed var(--accent); }
-.file-table td { padding:5px 10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:12px; }
-.file-table td:first-child { max-width:0; width:99%; }
-.file-name-cell { display:flex; align-items:center; gap:6px; }
-.file-icon { font-size:14px; flex-shrink:0; }
-.file-name-text { overflow:hidden; text-overflow:ellipsis; }
-.file-table td.muted { color:var(--text2); }
+.ftable thead th:hover{color:var(--text);}
+.sa{font-size:9px;margin-left:2px;}
+.ftable tbody tr{border-bottom:1px solid rgba(255,255,255,0.03);cursor:pointer;transition:background .07s;}
+.ftable tbody tr:hover{background:var(--hover);}
+.ftable tbody tr:hover .row-actions{opacity:1;}
+.ftable tbody tr.sel{background:var(--selected);outline:1px solid var(--sel-bdr);}
+.ftable tbody tr.drop-target{background:rgba(0,120,212,.2)!important;outline:2px dashed var(--accent);}
+.ftable td{padding:4px 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px;}
+.ftable td:first-child{width:99%;}
+.fname{display:flex;align-items:center;gap:7px;}
+.ficon{font-size:14px;flex-shrink:0;line-height:1;}
+.fnametext{overflow:hidden;text-overflow:ellipsis;}
+.fmuted{color:var(--text2);}
+.row-actions{opacity:0;display:flex;gap:2px;transition:opacity .1s;}
+.ra-btn{background:none;border:none;color:var(--text3);cursor:pointer;padding:2px 5px;border-radius:3px;font-size:11px;transition:background .1s,color .1s;}
+.ra-btn:hover{background:var(--bg5);color:var(--text);}
+.ra-btn.del:hover{background:rgba(196,43,28,.2);color:#f08080;}
 
-/* ── STATUSBAR ── */
-.panel-status {
-  background:var(--bg2);
-  border-top:1px solid var(--border);
-  padding:3px 10px;
-  font-size:11px;
-  color:var(--text3);
-  display:flex;
-  gap:16px;
-  flex-shrink:0;
+/* ── STATUS ── */
+.pstatus{
+  height:22px;background:var(--bg2);border-top:1px solid var(--border);
+  padding:0 10px;font-size:11px;color:var(--text3);
+  display:flex;align-items:center;gap:16px;flex-shrink:0;
 }
 
 /* ── CONTEXT MENU ── */
-#ctx-menu {
-  position:fixed; background:var(--bg3); border:1px solid var(--border2);
-  border-radius:var(--radius); padding:4px; min-width:200px; z-index:999;
-  box-shadow:0 8px 24px rgba(0,0,0,0.5); display:none;
+#ctx{
+  position:fixed;background:var(--bg3);border:1px solid var(--border2);
+  border-radius:var(--radius);padding:4px;min-width:210px;z-index:999;
+  box-shadow:0 8px 32px rgba(0,0,0,.55);display:none;
 }
-#ctx-menu.open { display:block; }
-.ctx-item {
-  padding:6px 14px; border-radius:var(--radius-sm); cursor:pointer;
-  display:flex; align-items:center; gap:8px; font-size:12px; color:var(--text);
-  transition:background 0.08s;
+#ctx.open{display:block;}
+.ci{
+  padding:6px 12px;border-radius:var(--rsm);cursor:pointer;
+  display:flex;align-items:center;gap:9px;font-size:12px;color:var(--text);
+  transition:background .08s;
 }
-.ctx-item:hover { background:var(--accent-bg); color:var(--accent); }
-.ctx-item.danger:hover { background:rgba(196,43,28,0.15); color:#f08080; }
-.ctx-item .ctx-icon { width:16px; text-align:center; flex-shrink:0; }
-.ctx-item .ctx-shortcut { margin-left:auto; color:var(--text3); font-size:11px; }
-.ctx-sep { height:1px; background:var(--border); margin:4px 8px; }
-.ctx-group-label { padding:4px 14px 2px; font-size:10px; color:var(--text3); text-transform:uppercase; letter-spacing:0.8px; }
-
-/* ── SIDEBAR ── */
-#sidebar {
-  width:200px;
-  background:var(--bg2);
-  border-right:1px solid var(--border);
-  overflow-y:auto;
-  flex-shrink:0;
-  padding:8px 0;
-}
-.side-section { margin-bottom:4px; }
-.side-title { font-size:10px; color:var(--text3); padding:6px 14px 3px; text-transform:uppercase; letter-spacing:0.8px; }
-.side-item {
-  padding:5px 12px; cursor:pointer; display:flex; align-items:center; gap:7px;
-  border-radius:var(--radius-sm); margin:1px 6px; font-size:12px; color:var(--text2);
-  transition:background 0.1s; white-space:nowrap; overflow:hidden;
-}
-.side-item:hover { background:var(--bg4); color:var(--text); }
-.side-item.active { background:var(--accent-bg); color:var(--accent); }
-.side-item .side-icon { font-size:13px; flex-shrink:0; }
+.ci:hover{background:var(--accent-bg);color:var(--accent);}
+.ci.red:hover{background:rgba(196,43,28,.15);color:#f08080;}
+.ci-ico{width:15px;text-align:center;font-size:13px;flex-shrink:0;}
+.ci-sc{margin-left:auto;color:var(--text3);font-size:10px;}
+.csep{height:1px;background:var(--border);margin:3px 6px;}
 
 /* ── MODAL ── */
-.modal-overlay {
-  position:fixed; inset:0; background:rgba(0,0,0,0.6);
-  display:flex; align-items:center; justify-content:center; z-index:800;
-}
-.modal {
-  background:var(--bg3); border:1px solid var(--border2); border-radius:10px;
-  padding:24px; min-width:360px; max-width:500px; width:90vw;
-  box-shadow:0 16px 40px rgba(0,0,0,0.6);
-}
-.modal h3 { font-size:14px; font-weight:600; margin-bottom:16px; }
-.modal label { display:block; font-size:11px; color:var(--text2); margin-bottom:5px; }
-.modal input[type=text] {
-  width:100%; background:var(--bg); border:1px solid var(--border2);
-  border-radius:var(--radius-sm); color:var(--text); padding:7px 10px;
-  font-size:13px; outline:none; margin-bottom:16px;
-}
-.modal input[type=text]:focus { border-color:var(--accent); }
-.modal-btns { display:flex; gap:8px; justify-content:flex-end; }
-.btn-primary { background:var(--accent); border:none; color:#fff; padding:6px 18px; border-radius:var(--radius-sm); cursor:pointer; font-size:12px; }
-.btn-primary:hover { background:var(--accent-hover); }
-.btn-cancel { background:var(--bg4); border:1px solid var(--border2); color:var(--text); padding:6px 18px; border-radius:var(--radius-sm); cursor:pointer; font-size:12px; }
-.btn-cancel:hover { background:var(--bg3); }
+.moverlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:800;}
+.modal{background:var(--bg3);border:1px solid var(--border2);border-radius:10px;padding:22px;min-width:340px;max-width:480px;width:90vw;box-shadow:0 16px 48px rgba(0,0,0,.6);}
+.modal h3{font-size:14px;font-weight:600;margin-bottom:14px;}
+.modal label{display:block;font-size:11px;color:var(--text2);margin-bottom:4px;}
+.modal input[type=text]{width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:var(--rsm);color:var(--text);padding:7px 10px;font-size:13px;outline:none;margin-bottom:14px;}
+.modal input[type=text]:focus{border-color:var(--accent);}
+.mbtns{display:flex;gap:8px;justify-content:flex-end;}
+.mbtn{padding:6px 16px;border-radius:var(--rsm);cursor:pointer;font-size:12px;border:none;}
+.mbtn.ok{background:var(--accent);color:#fff;}
+.mbtn.ok:hover{background:var(--accent2);}
+.mbtn.cancel{background:var(--bg4);color:var(--text);border:1px solid var(--border2);}
+.mbtn.cancel:hover{background:var(--bg5);}
+.props-grid{display:grid;grid-template-columns:100px 1fr;gap:5px 10px;font-size:12px;margin-bottom:14px;}
+.pk{color:var(--text2);}
+.pv{color:var(--text);word-break:break-all;}
 
-/* ── PROPERTIES MODAL ── */
-.props-grid { display:grid; grid-template-columns:110px 1fr; gap:6px 12px; font-size:12px; margin-bottom:16px; }
-.props-grid .pk { color:var(--text2); }
-.props-grid .pv { color:var(--text); word-break:break-all; }
-
-/* ── IMAGE PREVIEW ── */
-#img-preview {
-  position:fixed; inset:0; background:rgba(0,0,0,0.88);
-  display:none; align-items:center; justify-content:center; z-index:900; cursor:zoom-out;
-}
-#img-preview.open { display:flex; }
-#img-preview img { max-width:90vw; max-height:90vh; border-radius:8px; }
+/* ── IMG PREVIEW ── */
+#imgprev{position:fixed;inset:0;background:rgba(0,0,0,.88);display:none;align-items:center;justify-content:center;z-index:900;cursor:zoom-out;}
+#imgprev.open{display:flex;}
+#imgprev img{max-width:90vw;max-height:90vh;border-radius:8px;}
 
 /* ── TOAST ── */
-#toast-container { position:fixed; bottom:20px; right:20px; display:flex; flex-direction:column; gap:8px; z-index:1000; }
-.toast {
-  background:var(--bg3); border:1px solid var(--border2); border-radius:var(--radius);
-  padding:10px 16px; font-size:12px; color:var(--text); box-shadow:0 4px 16px rgba(0,0,0,0.4);
-  display:flex; align-items:center; gap:8px; animation:slideIn 0.2s ease;
-  max-width:320px;
-}
-.toast.success { border-left:3px solid #3a8f3a; }
-.toast.error { border-left:3px solid var(--danger); }
-@keyframes slideIn { from { transform:translateX(20px); opacity:0; } to { transform:translateX(0); opacity:1; } }
+#toasts{position:fixed;bottom:16px;right:16px;display:flex;flex-direction:column;gap:7px;z-index:1000;}
+.toast{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius);padding:9px 14px;font-size:12px;color:var(--text);box-shadow:0 4px 16px rgba(0,0,0,.4);display:flex;align-items:center;gap:8px;animation:tin .2s ease;max-width:300px;}
+.toast.ok{border-left:3px solid #3a9f3a;}
+.toast.err{border-left:3px solid var(--danger);}
+@keyframes tin{from{transform:translateX(16px);opacity:0}to{transform:none;opacity:1}}
 
-/* ── DRAG INDICATOR ── */
-.drag-ghost { position:fixed; pointer-events:none; z-index:9999; background:var(--bg3); border:1px solid var(--accent); border-radius:var(--radius-sm); padding:5px 10px; font-size:12px; opacity:0.9; }
-
-::-webkit-scrollbar { width:7px; height:7px; }
-::-webkit-scrollbar-track { background:transparent; }
-::-webkit-scrollbar-thumb { background:var(--bg4); border-radius:4px; }
-::-webkit-scrollbar-thumb:hover { background:var(--border2); }
+::-webkit-scrollbar{width:6px;height:6px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--bg5);border-radius:3px;}
+::-webkit-scrollbar-thumb:hover{background:var(--border2);}
 </style>
 </head>
 <body>
 
 <!-- TITLEBAR -->
 <div id="titlebar">
-  <div class="logo">🗂 <span>Web</span>Explorer</div>
-  <div id="titlebar-spacer"></div>
-  <button class="tb-icon-btn" id="btn-toggle-sidebar" title="Sidebar" onclick="toggleSidebar()">☰</button>
-  <button class="tb-icon-btn" id="btn-toggle-dual" title="Dual Panel" onclick="toggleDual()">⊞</button>
-  <button class="tb-icon-btn" title="Ρυθμίσεις" onclick="showSettings()">⚙</button>
+  <div class="logo">🗂 <span class="logo-accent">Web</span>Explorer</div>
+  <div id="titlebar-gap"></div>
+  <button class="tl-btn" id="tl-sidebar" onclick="toggleSidebar()" title="Sidebar (S)">☰</button>
+  <button class="tl-btn" id="tl-dual" onclick="toggleDual()" title="Dual Panel (D)">⊞</button>
+  <button class="tl-btn" onclick="showSettings()" title="Ρυθμίσεις">⚙</button>
 </div>
 
 <!-- TOOLBAR -->
 <div id="toolbar">
-  <button class="tb-btn" onclick="activePanel().goUp()">
-    <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1L1 8h4v7h6V8h4L8 1z"/></svg> Επάνω
-  </button>
+  <button class="tb-btn" onclick="AP().goBack()" title="Πίσω (Alt+←)"><span class="ico">‹</span></button>
+  <button class="tb-btn" onclick="AP().goForward()" title="Μπροστά (Alt+→)"><span class="ico">›</span></button>
+  <button class="tb-btn" onclick="AP().goUp()" title="Επάνω (Alt+↑)"><span class="ico">↑</span> Επάνω</button>
+  <button class="tb-btn" onclick="AP().refresh()" title="Ανανέωση (F5)"><span class="ico">⟳</span></button>
   <div class="tb-sep"></div>
-  <button class="tb-btn" onclick="showNewFolder()">
-    <svg viewBox="0 0 16 16" fill="currentColor"><path d="M1 3a1 1 0 011-1h4l2 2h6a1 1 0 011 1v7a1 1 0 01-1 1H2a1 1 0 01-1-1V3zm7 4H5v1h2v2h1V8h2V7H8V5H7v2z"/></svg> Νέος Φάκελος
-  </button>
-  <button class="tb-btn" onclick="triggerUpload()">
-    <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1l-5 5h3v5h4V6h3L8 1zM2 13h12v1H2v-1z"/></svg> Upload
-  </button>
-  <input id="upload-input" type="file" multiple style="display:none" onchange="doUpload(this.files)">
+  <button class="tb-btn primary" onclick="showNewFolder()"><span class="ico">📁</span> Νέος Φάκελος</button>
+  <button class="tb-btn" onclick="triggerUpload()"><span class="ico">⬆</span> Upload</button>
+  <input id="upl-inp" type="file" multiple style="display:none" onchange="doUpload(this.files)">
   <div class="tb-sep"></div>
-  <button class="tb-btn" id="btn-paste" onclick="doPaste()" style="display:none">
-    <svg viewBox="0 0 16 16" fill="currentColor"><path d="M5 1h6v2H5V1zM3 3h2v1h6V3h2v11H3V3zm2 3v1h6V6H5zm0 2v1h6V8H5zm0 2v1h4v-1H5z"/></svg> Επικόλληση
-  </button>
-  <div class="tb-sep"></div>
-  <button class="tb-btn" onclick="activePanel().refresh()">⟳ Ανανέωση</button>
+  <button class="tb-btn" id="btn-paste-tb" onclick="doPaste()"><span class="ico">📌</span> Επικόλληση</button>
 </div>
 
 <!-- MAIN -->
-<div id="main" style="display:flex;flex:1;overflow:hidden;">
-
+<div id="main">
   <!-- SIDEBAR -->
   <div id="sidebar">
-    <div class="side-section">
-      <div class="side-title">Γρήγορη Πρόσβαση</div>
-      <div class="side-item" onclick="activePanel().navigate(homeDir)"><span class="side-icon">🏠</span> Αρχική</div>
-      <div class="side-item" onclick="activePanel().navigate(homeDir+'\\Desktop')"><span class="side-icon">🖥️</span> Επιφάνεια Εργ.</div>
-      <div class="side-item" onclick="activePanel().navigate(homeDir+'\\Documents')"><span class="side-icon">📁</span> Έγγραφα</div>
-      <div class="side-item" onclick="activePanel().navigate(homeDir+'\\Downloads')"><span class="side-icon">⬇️</span> Λήψεις</div>
-      <div class="side-item" onclick="activePanel().navigate(homeDir+'\\Pictures')"><span class="side-icon">🖼️</span> Εικόνες</div>
+    <div class="side-sec">
+      <div class="side-lbl">Γρήγορη Πρόσβαση</div>
+      <div class="side-item" onclick="AP().navigate(hd)"><span class="side-ico">🏠</span>Αρχική</div>
+      <div class="side-item" onclick="AP().navigate(hd+'\\Desktop')"><span class="side-ico">🖥️</span>Επιφάνεια Εργ.</div>
+      <div class="side-item" onclick="AP().navigate(hd+'\\Documents')"><span class="side-ico">📁</span>Έγγραφα</div>
+      <div class="side-item" onclick="AP().navigate(hd+'\\Downloads')"><span class="side-ico">⬇️</span>Λήψεις</div>
+      <div class="side-item" onclick="AP().navigate(hd+'\\Pictures')"><span class="side-ico">🖼️</span>Εικόνες</div>
     </div>
-    <div class="side-section">
-      <div class="side-title">Δίσκοι</div>
-      <div id="drives-list"></div>
+    <div class="side-sec">
+      <div class="side-lbl">Δίσκοι</div>
+      <div id="drives"></div>
     </div>
   </div>
 
   <!-- PANELS -->
-  <div id="panels" style="flex:1;display:flex;overflow:hidden;">
-    <div id="panel-left" class="panel"></div>
+  <div id="panels">
+    <div id="panel-left" class="panel active-panel"></div>
     <div id="resizer" style="display:none"></div>
     <div id="panel-right" class="panel" style="display:none"></div>
   </div>
 </div>
 
 <!-- CONTEXT MENU -->
-<div id="ctx-menu">
-  <div class="ctx-item" id="ctx-open"><span class="ctx-icon">📂</span> Άνοιγμα</div>
-  <div class="ctx-sep"></div>
-  <div class="ctx-item" id="ctx-copy"><span class="ctx-icon">📋</span> Αντιγραφή <span class="ctx-shortcut">Ctrl+C</span></div>
-  <div class="ctx-item" id="ctx-cut"><span class="ctx-icon">✂️</span> Αποκοπή <span class="ctx-shortcut">Ctrl+X</span></div>
-  <div class="ctx-item" id="ctx-paste"><span class="ctx-icon">📌</span> Επικόλληση <span class="ctx-shortcut">Ctrl+V</span></div>
-  <div class="ctx-sep"></div>
-  <div class="ctx-item" id="ctx-rename"><span class="ctx-icon">✏️</span> Μετονομασία <span class="ctx-shortcut">F2</span></div>
-  <div class="ctx-item danger" id="ctx-delete"><span class="ctx-icon">🗑️</span> Διαγραφή <span class="ctx-shortcut">Del</span></div>
-  <div class="ctx-sep"></div>
-  <div class="ctx-item" id="ctx-newfolder"><span class="ctx-icon">📁</span> Νέος Φάκελος</div>
-  <div class="ctx-sep"></div>
-  <div class="ctx-item" id="ctx-props"><span class="ctx-icon">ℹ️</span> Ιδιότητες <span class="ctx-shortcut">Alt+Enter</span></div>
+<div id="ctx">
+  <div class="ci" id="ci-open"><span class="ci-ico">📂</span>Άνοιγμα</div>
+  <div class="csep"></div>
+  <div class="ci" id="ci-copy"><span class="ci-ico">📋</span>Αντιγραφή<span class="ci-sc">Ctrl+C</span></div>
+  <div class="ci" id="ci-cut"><span class="ci-ico">✂️</span>Αποκοπή<span class="ci-sc">Ctrl+X</span></div>
+  <div class="ci" id="ci-paste"><span class="ci-ico">📌</span>Επικόλληση<span class="ci-sc">Ctrl+V</span></div>
+  <div class="csep"></div>
+  <div class="ci" id="ci-rename"><span class="ci-ico">✏️</span>Μετονομασία<span class="ci-sc">F2</span></div>
+  <div class="ci red" id="ci-del"><span class="ci-ico">🗑️</span>Διαγραφή<span class="ci-sc">Del</span></div>
+  <div class="csep"></div>
+  <div class="ci" id="ci-mkdir"><span class="ci-ico">📁</span>Νέος Φάκελος</div>
+  <div class="csep"></div>
+  <div class="ci" id="ci-props"><span class="ci-ico">ℹ️</span>Ιδιότητες<span class="ci-sc">Alt+Enter</span></div>
 </div>
 
-<!-- IMAGE PREVIEW -->
-<div id="img-preview" onclick="document.getElementById('img-preview').classList.remove('open')">
-  <img id="img-preview-src" src="" alt="">
+<!-- IMG PREVIEW -->
+<div id="imgprev" onclick="this.classList.remove('open')">
+  <img id="imgprev-src" src="" alt="">
 </div>
 
 <!-- TOAST -->
-<div id="toast-container"></div>
+<div id="toasts"></div>
 
-<!-- MODAL CONTAINER -->
-<div id="modal-root"></div>
+<!-- MODAL ROOT -->
+<div id="mroot"></div>
 
 <script>
-// ══════════════════════════════════════════════════════════════════════════════
-// STATE
-// ══════════════════════════════════════════════════════════════════════════════
-let homeDir = 'C:\\Users';
-let dualMode = false;
-let sidebarVisible = true;
-let activePanelId = 'left';
-let clipboard = null; // { op:'copy'|'cut', srcDir, name }
-let dragData = null;
+// ═══════════════════════════════════════════════════════
+// CONSTANTS & STATE
+// ═══════════════════════════════════════════════════════
+const IMGS = new Set(['.jpg','.jpeg','.png','.gif','.bmp','.webp','.svg','.ico']);
+let hd = 'C:\\Users';
+let dual = false, sidebarOn = true;
+let activePID = 'left';
+let clip = null;
+let dragSrc = null;
+const panels = {};
 
-const IMG_EXTS = new Set(['.jpg','.jpeg','.png','.gif','.bmp','.webp','.svg','.ico','.tiff']);
-
-// ══════════════════════════════════════════════════════════════════════════════
-// PANEL CLASS
-// ══════════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
+// PANEL
+// ═══════════════════════════════════════════════════════
 class Panel {
   constructor(id) {
     this.id = id;
     this.el = document.getElementById('panel-' + id);
-    this.tabs = [{ path: homeDir, history: [], future: [], items: [], selected: null, sortKey:'name', sortAsc:true, name:'Αρχική' }];
-    this.activeTab = 0;
-    this.build();
+    this.tabs = [this.newTabData(hd)];
+    this.ti = 0;
+    this.render();
+    this.load(hd);
   }
 
-  get tab() { return this.tabs[this.activeTab]; }
+  get t() { return this.tabs[this.ti]; }
 
-  build() {
+  newTabData(path) {
+    return { path, hist:[], fut:[], items:[], sel:null, sk:'name', sa:true, name:'...' };
+  }
+
+  // ── Build panel DOM ──────────────────────────────────
+  render() {
     this.el.innerHTML = `
-      <div class="tab-bar" id="tabbar-${this.id}"></div>
-      <div class="addr-bar-wrap">
-        <button class="nav-btn" id="back-${this.id}" onclick="panels.${this.id}.goBack()" title="Πίσω">‹</button>
-        <button class="nav-btn" id="fwd-${this.id}" onclick="panels.${this.id}.goForward()" title="Εμπρός">›</button>
-        <button class="nav-btn" onclick="panels.${this.id}.goUp()" title="Επάνω">↑</button>
-        <input class="addr-bar" id="addr-${this.id}" type="text"
-          onkeydown="if(event.key==='Enter')panels.${this.id}.navigate(this.value)"
-          onfocus="this.select()">
+      <div class="tabbar" id="tb-${this.id}"></div>
+      <div class="breadcrumb-wrap">
+        <button class="nav-btn" id="bb-${this.id}" onclick="panels.${this.id}.goBack()">‹</button>
+        <button class="nav-btn" id="bf-${this.id}" onclick="panels.${this.id}.goForward()">›</button>
+        <button class="nav-btn" onclick="panels.${this.id}.goUp()">↑</button>
+        <div class="breadcrumb" id="bc-${this.id}" onclick="panels.${this.id}.editAddr()"></div>
+        <input class="breadcrumb-input" id="bci-${this.id}" type="text"
+          onblur="panels.${this.id}.leaveAddr()"
+          onkeydown="panels.${this.id}.addrKey(event)">
         <div class="search-wrap">
-          <span class="search-icon">🔍</span>
-          <input class="search-input" id="search-${this.id}" type="text" placeholder="Αναζήτηση..."
+          <span class="search-ico">🔍</span>
+          <input class="search-box" id="srch-${this.id}" type="text" placeholder="Αναζήτηση..."
             onkeydown="if(event.key==='Enter')panels.${this.id}.doSearch(this.value)">
         </div>
       </div>
-      <div class="file-list-wrap" id="list-wrap-${this.id}"
+      <div class="list-wrap" id="lw-${this.id}"
         ondragover="event.preventDefault()"
-        ondrop="panels.${this.id}.onDropPanel(event)">
-        <table class="file-table">
-          <thead>
-            <tr>
-              <th onclick="panels.${this.id}.sortBy('name')">Όνομα <span class="sort-arrow" id="sa-name-${this.id}">↑</span></th>
-              <th onclick="panels.${this.id}.sortBy('modified')" style="width:160px">Τροποποίηση <span class="sort-arrow" id="sa-modified-${this.id}"></span></th>
-              <th onclick="panels.${this.id}.sortBy('size')" style="width:90px">Μέγεθος <span class="sort-arrow" id="sa-size-${this.id}"></span></th>
-              <th onclick="panels.${this.id}.sortBy('ext')" style="width:70px">Τύπος <span class="sort-arrow" id="sa-ext-${this.id}"></span></th>
-            </tr>
-          </thead>
-          <tbody id="tbody-${this.id}"></tbody>
+        ondrop="panels.${this.id}.dropOnPanel(event)"
+        oncontextmenu="ctxEmpty(event,'${this.id}')">
+        <table class="ftable">
+          <thead><tr>
+            <th onclick="panels.${this.id}.sort('name')">Όνομα <span class="sa" id="sa-name-${this.id}">↑</span></th>
+            <th onclick="panels.${this.id}.sort('modified')" style="width:150px">Τροπ/ση <span class="sa" id="sa-mod-${this.id}"></span></th>
+            <th onclick="panels.${this.id}.sort('size')" style="width:80px">Μέγεθος <span class="sa" id="sa-sz-${this.id}"></span></th>
+            <th onclick="panels.${this.id}.sort('ext')" style="width:65px">Τύπος <span class="sa" id="sa-ext-${this.id}"></span></th>
+            <th style="width:60px"></th>
+          </tr></thead>
+          <tbody id="body-${this.id}"></tbody>
         </table>
       </div>
-      <div class="panel-status" id="status-${this.id}">
-        <span id="status-count-${this.id}">0 στοιχεία</span>
-        <span id="status-sel-${this.id}"></span>
+      <div class="pstatus">
+        <span id="sc-${this.id}">0 στοιχεία</span>
+        <span id="ss-${this.id}"></span>
       </div>`;
     this.renderTabs();
-    this.load(homeDir);
   }
 
-  // ── Tabs ──────────────────────────────────────────────────────────────────
+  // ── Tabs ─────────────────────────────────────────────
   renderTabs() {
-    const bar = document.getElementById('tabbar-' + this.id);
-    bar.innerHTML = this.tabs.map((t,i) => `
-      <div class="tab ${i===this.activeTab?'active':''}" onclick="panels.${this.id}.switchTab(${i})">
-        <span class="tab-name">${t.name}</span>
-        ${this.tabs.length > 1 ? `<span class="tab-close" onclick="event.stopPropagation();panels.${this.id}.closeTab(${i})">✕</span>` : ''}
-      </div>`).join('') +
-      `<button class="tab-new" onclick="panels.${this.id}.newTab()" title="Νέα καρτέλα">+</button>`;
+    document.getElementById('tb-' + this.id).innerHTML =
+      this.tabs.map((t,i) => `
+        <div class="tab ${i===this.ti?'on':''}" onclick="panels.${this.id}.switchTab(${i})">
+          <span class="tab-name">${t.name}</span>
+          ${this.tabs.length>1?`<span class="tab-x" onclick="event.stopPropagation();panels.${this.id}.closeTab(${i})">✕</span>`:''}
+        </div>`).join('') +
+      `<button class="tab-add" onclick="panels.${this.id}.addTab()" title="Ctrl+T">＋</button>`;
   }
 
-  newTab(path) {
-    this.tabs.push({ path: path||homeDir, history:[], future:[], items:[], selected:null, sortKey:'name', sortAsc:true, name:'Νέα καρτέλα' });
-    this.activeTab = this.tabs.length - 1;
+  addTab(path) {
+    this.tabs.push(this.newTabData(path||hd));
+    this.ti = this.tabs.length - 1;
     this.renderTabs();
-    this.load(path||homeDir);
+    this.load(path||hd);
   }
 
-  switchTab(i) {
-    this.activeTab = i;
-    this.renderTabs();
-    this.renderFiles();
-    document.getElementById('addr-' + this.id).value = this.tab.path;
-  }
+  switchTab(i) { this.ti = i; this.renderTabs(); this.renderFiles(); this.renderBreadcrumb(); }
 
   closeTab(i) {
     this.tabs.splice(i, 1);
-    if (this.activeTab >= this.tabs.length) this.activeTab = this.tabs.length - 1;
-    this.renderTabs();
-    this.renderFiles();
+    if (this.ti >= this.tabs.length) this.ti = this.tabs.length - 1;
+    this.renderTabs(); this.renderFiles(); this.renderBreadcrumb();
   }
 
-  // ── Navigation ────────────────────────────────────────────────────────────
+  // ── Load ─────────────────────────────────────────────
   async load(p) {
     try {
       const r = await fetch('/api/list?path=' + encodeURIComponent(p));
-      const data = await r.json();
-      if (data.error) { toast('Σφάλμα: ' + data.error, 'error'); return; }
-
-      this.tab.path = data.path;
-      this.tab.items = data.items;
-      this.tab.selected = null;
-      this.tab.name = data.path.split('\\').pop() || data.path;
-      if (!this.tab.name) this.tab.name = data.path;
-
-      document.getElementById('addr-' + this.id).value = data.path;
-      renderDrives(data.drives);
+      const d = await r.json();
+      if (d.error) { toast('Σφάλμα: ' + d.error, 'err'); return; }
+      this.t.path = d.path;
+      this.t.items = d.items;
+      this.t.sel = null;
+      this.t.name = d.path.split('\\').filter(Boolean).pop() || d.path;
+      renderDrives(d.drives);
       this.renderTabs();
+      this.renderBreadcrumb();
       this.renderFiles();
-      this.updateNavBtns();
-    } catch(e) { toast('Σφάλμα σύνδεσης', 'error'); }
+      this.updateNav();
+    } catch(e) { toast('Σφάλμα σύνδεσης', 'err'); }
   }
 
   navigate(p) {
     if (!p) return;
-    this.tab.history.push(this.tab.path);
-    this.tab.future = [];
+    this.t.hist.push(this.t.path);
+    this.t.fut = [];
     this.load(p);
   }
 
-  goBack() {
-    if (!this.tab.history.length) return;
-    this.tab.future.push(this.tab.path);
-    this.load(this.tab.history.pop());
-  }
-
-  goForward() {
-    if (!this.tab.future.length) return;
-    this.tab.history.push(this.tab.path);
-    this.load(this.tab.future.pop());
-  }
-
+  goBack() { if (this.t.hist.length) { this.t.fut.push(this.t.path); this.load(this.t.hist.pop()); } }
+  goForward() { if (this.t.fut.length) { this.t.hist.push(this.t.path); this.load(this.t.fut.pop()); } }
   goUp() {
-    const p = this.tab.path;
-    const up = p.match(/^[A-Z]:\\$/) ? p : p.replace(/\\[^\\]+$/, '') || p.slice(0,3);
+    const p = this.t.path;
+    const up = /^[A-Z]:\\$/.test(p) ? p : p.replace(/\\[^\\]+$/, '') || p.slice(0,3);
     if (up !== p) this.navigate(up);
   }
+  refresh() { this.load(this.t.path); }
 
-  refresh() { this.load(this.tab.path); }
-
-  updateNavBtns() {
-    const b = document.getElementById('back-' + this.id);
-    const f = document.getElementById('fwd-' + this.id);
-    if (b) b.disabled = !this.tab.history.length;
-    if (f) f.disabled = !this.tab.future.length;
+  updateNav() {
+    const bb = document.getElementById('bb-' + this.id);
+    const bf = document.getElementById('bf-' + this.id);
+    if (bb) bb.disabled = !this.t.hist.length;
+    if (bf) bf.disabled = !this.t.fut.length;
   }
 
-  // ── Render ────────────────────────────────────────────────────────────────
-  renderFiles() {
-    const items = [...this.tab.items];
-    const { sortKey, sortAsc } = this.tab;
-
-    // Sort arrows
-    ['name','modified','size','ext'].forEach(k => {
-      const el = document.getElementById('sa-' + k + '-' + this.id);
-      if (el) el.textContent = k === sortKey ? (sortAsc ? '↑' : '↓') : '';
+  // ── Breadcrumb ───────────────────────────────────────
+  renderBreadcrumb() {
+    const bc = document.getElementById('bc-' + this.id);
+    if (!bc) return;
+    const parts = this.t.path.split('\\').filter(Boolean);
+    // Reconstruct paths: C:\ , C:\Users , C:\Users\gioko ...
+    let html = '';
+    parts.forEach((part, i) => {
+      const fullPath = parts.slice(0, i+1).join('\\') + (i===0?'\\':'');
+      const isLast = i === parts.length - 1;
+      html += `<span class="bc-part${isLast?' last':''}" onclick="event.stopPropagation();panels.${this.id}.navigate('${esc(fullPath)}')" title="${fullPath}">${part}</span>`;
+      if (!isLast) html += `<span class="bc-sep">›</span>`;
     });
+    bc.innerHTML = html;
+  }
 
-    items.sort((a,b) => {
+  editAddr() {
+    const bc = document.getElementById('bc-' + this.id);
+    const inp = document.getElementById('bci-' + this.id);
+    bc.classList.add('editing');
+    inp.classList.add('editing');
+    inp.value = this.t.path;
+    inp.focus(); inp.select();
+  }
+
+  leaveAddr() {
+    const bc = document.getElementById('bc-' + this.id);
+    const inp = document.getElementById('bci-' + this.id);
+    setTimeout(() => { bc.classList.remove('editing'); inp.classList.remove('editing'); }, 150);
+  }
+
+  addrKey(e) {
+    if (e.key === 'Enter') { this.navigate(e.target.value); e.target.blur(); }
+    if (e.key === 'Escape') { e.target.blur(); }
+  }
+
+  // ── Files ────────────────────────────────────────────
+  renderFiles() {
+    const items = [...this.t.items].sort((a,b) => {
       if (a.isDir && !b.isDir) return -1;
       if (!a.isDir && b.isDir) return 1;
-      let va = a[sortKey], vb = b[sortKey];
-      if (sortKey === 'size') { va = a.size; vb = b.size; }
-      if (va < vb) return sortAsc ? -1 : 1;
-      if (va > vb) return sortAsc ? 1 : -1;
+      let va = a[this.t.sk], vb = b[this.t.sk];
+      if (this.t.sk==='size'){va=a.size;vb=b.size;}
+      if (va<vb) return this.t.sa?-1:1;
+      if (va>vb) return this.t.sa?1:-1;
       return 0;
     });
 
-    const tbody = document.getElementById('tbody-' + this.id);
-    if (!tbody) return;
-    tbody.innerHTML = items.map(item => `
-      <tr id="row-${this.id}-${safeId(item.name)}"
-        class="${this.tab.selected===item.name?'selected':''}"
+    ['name','mod','sz','ext'].forEach(k => {
+      const el = document.getElementById('sa-'+k+'-'+this.id);
+      if (el) el.textContent = '';
+    });
+    const skMap = {name:'name',modified:'mod',size:'sz',ext:'ext'};
+    const arrow = document.getElementById('sa-'+(skMap[this.t.sk]||'name')+'-'+this.id);
+    if (arrow) arrow.textContent = this.t.sa ? '↑' : '↓';
+
+    const body = document.getElementById('body-' + this.id);
+    if (!body) return;
+
+    body.innerHTML = items.map(item => `
+      <tr id="r-${this.id}-${sid(item.name)}"
+        class="${this.t.sel===item.name?'sel':''}"
         onclick="panels.${this.id}.select('${esc(item.name)}')"
         ondblclick="panels.${this.id}.open('${esc(item.name)}')"
-        oncontextmenu="showCtx(event,'${this.id}','${esc(item.name)}')"
+        oncontextmenu="ctxShow(event,'${this.id}','${esc(item.name)}')"
         draggable="true"
-        ondragstart="panels.${this.id}.onDragStart(event,'${esc(item.name)}')"
-        ondragover="panels.${this.id}.onDragOver(event,'${esc(item.name)}')"
-        ondragleave="panels.${this.id}.onDragLeave(event,'${esc(item.name)}')"
-        ondrop="panels.${this.id}.onDrop(event,'${esc(item.name)}')">
-        <td>
-          <div class="file-name-cell">
-            <span class="file-icon">${fileIcon(item)}</span>
-            <span class="file-name-text">${item.name}</span>
-          </div>
-        </td>
-        <td class="muted">${formatDate(item.modified)}</td>
-        <td class="muted">${item.isDir ? '' : formatSize(item.size)}</td>
-        <td class="muted">${item.ext ? item.ext.slice(1).toUpperCase() : (item.isDir ? 'Φάκελος' : '')}</td>
+        ondragstart="panels.${this.id}.dragStart(event,'${esc(item.name)}')"
+        ondragover="panels.${this.id}.dragOver(event,'${esc(item.name)}')"
+        ondragleave="panels.${this.id}.dragLeave(event,'${esc(item.name)}')"
+        ondrop="panels.${this.id}.dropOn(event,'${esc(item.name)}')">
+        <td><div class="fname"><span class="ficon">${fIcon(item)}</span><span class="fnametext">${item.name}</span></div></td>
+        <td class="fmuted">${fDate(item.modified)}</td>
+        <td class="fmuted">${item.isDir?'':fSize(item.size)}</td>
+        <td class="fmuted">${item.ext?item.ext.slice(1).toUpperCase():(item.isDir?'Φάκελος':'')}</td>
+        <td><div class="row-actions">
+          <button class="ra-btn" onclick="event.stopPropagation();raRename('${this.id}','${esc(item.name)}')" title="Μετονομασία">✏</button>
+          <button class="ra-btn del" onclick="event.stopPropagation();raDel('${this.id}','${esc(item.name)}')" title="Διαγραφή">🗑</button>
+        </div></td>
       </tr>`).join('');
 
-    const cnt = items.length;
-    const files = items.filter(i => !i.isDir).length;
-    document.getElementById('status-count-' + this.id).textContent =
-      cnt + ' στοιχεία' + (files ? ' (' + files + ' αρχεία)' : '');
-    document.getElementById('status-sel-' + this.id).textContent =
-      this.tab.selected ? 'Επιλεγμένο: ' + this.tab.selected : '';
+    const cnt = items.length, files = items.filter(i=>!i.isDir).length;
+    document.getElementById('sc-' + this.id).textContent = cnt + ' στοιχεία' + (files?` (${files} αρχεία)`:'');
+    document.getElementById('ss-' + this.id).textContent = this.t.sel ? 'Επιλ.: ' + this.t.sel : '';
   }
 
-  sortBy(key) {
-    if (this.tab.sortKey === key) this.tab.sortAsc = !this.tab.sortAsc;
-    else { this.tab.sortKey = key; this.tab.sortAsc = true; }
+  sort(k) {
+    if (this.t.sk===k) this.t.sa = !this.t.sa;
+    else { this.t.sk=k; this.t.sa=true; }
     this.renderFiles();
   }
 
   select(name) {
-    this.tab.selected = name;
-    setActivePanel(this.id);
+    this.t.sel = name;
+    setAP(this.id);
+    document.querySelectorAll('.panel.active-panel').forEach(p=>p.classList.remove('active-panel'));
+    this.el.classList.add('active-panel');
     this.renderFiles();
-    updatePasteBtn();
   }
 
   open(name) {
-    const item = this.tab.items.find(i => i.name === name);
+    const item = this.t.items.find(i=>i.name===name);
     if (!item) return;
-    if (item.isDir) {
-      this.navigate(this.tab.path + '\\' + name);
-    } else if (IMG_EXTS.has(item.ext)) {
-      document.getElementById('img-preview-src').src = '/api/image?path=' + encodeURIComponent(this.tab.path + '\\' + name);
-      document.getElementById('img-preview').classList.add('open');
+    if (item.isDir) this.navigate(this.t.path+'\\'+name);
+    else if (IMGS.has(item.ext)) {
+      document.getElementById('imgprev-src').src = '/api/image?path='+encodeURIComponent(this.t.path+'\\'+name);
+      document.getElementById('imgprev').classList.add('open');
     }
   }
 
-  // ── Drag & Drop ───────────────────────────────────────────────────────────
-  onDragStart(event, name) {
-    dragData = { srcDir: this.tab.path, name, panelId: this.id };
-    event.dataTransfer.effectAllowed = 'move';
-    event.dataTransfer.setData('text/plain', name);
+  // ── Drag & Drop ──────────────────────────────────────
+  dragStart(e, name) {
+    dragSrc = { srcDir: this.t.path, name, pid: this.id };
+    e.dataTransfer.effectAllowed = 'move';
   }
 
-  onDragOver(event, name) {
-    event.preventDefault();
-    const item = this.tab.items.find(i => i.name === name);
-    if (item && item.isDir) {
-      const row = document.getElementById('row-' + this.id + '-' + safeId(name));
-      if (row) row.classList.add('drag-over-row');
-    }
+  dragOver(e, name) {
+    e.preventDefault();
+    const item = this.t.items.find(i=>i.name===name);
+    if (item?.isDir) document.getElementById('r-'+this.id+'-'+sid(name))?.classList.add('drop-target');
   }
 
-  onDragLeave(event, name) {
-    const row = document.getElementById('row-' + this.id + '-' + safeId(name));
-    if (row) row.classList.remove('drag-over-row');
+  dragLeave(e, name) {
+    document.getElementById('r-'+this.id+'-'+sid(name))?.classList.remove('drop-target');
   }
 
-  async onDrop(event, name) {
-    event.preventDefault();
-    if (!dragData) return;
-    const item = this.tab.items.find(i => i.name === name);
-    const destDir = (item && item.isDir) ? this.tab.path + '\\' + name : this.tab.path;
-    await doMove(dragData.srcDir, dragData.name, destDir);
-    dragData = null;
-    this.refresh();
-    if (panels.left.tab.path === dragData?.srcDir || panels.right?.tab.path === dragData?.srcDir) {
-      panels.left.refresh(); panels.right?.refresh();
-    }
+  async dropOn(e, name) {
+    e.preventDefault();
+    if (!dragSrc) return;
+    const item = this.t.items.find(i=>i.name===name);
+    const dest = item?.isDir ? this.t.path+'\\'+name : this.t.path;
+    await apiMove(dragSrc.srcDir, dragSrc.name, dest);
+    dragSrc = null;
+    panels.left?.refresh(); panels.right?.refresh();
   }
 
-  async onDropPanel(event) {
-    event.preventDefault();
-    if (!dragData) return;
-    const destDir = this.tab.path;
-    if (dragData.srcDir === destDir) return;
-    await doMove(dragData.srcDir, dragData.name, destDir);
-    dragData = null;
-    panels.left.refresh();
-    if (panels.right) panels.right.refresh();
+  async dropOnPanel(e) {
+    e.preventDefault();
+    if (!dragSrc || dragSrc.srcDir === this.t.path) return;
+    await apiMove(dragSrc.srcDir, dragSrc.name, this.t.path);
+    dragSrc = null;
+    panels.left?.refresh(); panels.right?.refresh();
   }
 
   async doSearch(q) {
     if (!q) { this.refresh(); return; }
-    const r = await fetch('/api/search?dir=' + encodeURIComponent(this.tab.path) + '&query=' + encodeURIComponent(q));
-    const data = await r.json();
-    this.tab.items = data.results.map(r => ({ name: r.name + ' (' + r.path + ')', isDir: r.isDir, size: 0, modified: '', ext: '' }));
+    const r = await fetch('/api/search?dir='+encodeURIComponent(this.t.path)+'&query='+encodeURIComponent(q));
+    const d = await r.json();
+    this.t.items = d.results.map(r=>({name:r.name+' ('+r.path+')',isDir:r.isDir,size:0,modified:'',ext:''}));
     this.renderFiles();
   }
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
-// PANELS INIT
-// ══════════════════════════════════════════════════════════════════════════════
-const panels = { left: null, right: null };
-
+// ═══════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════
 function initPanels() {
   panels.left = new Panel('left');
-  // Fetch home dir
   fetch('/api/list?path=').then(r=>r.json()).then(d => {
-    homeDir = d.path.split('\\').slice(0,3).join('\\') || d.path;
+    hd = d.path.split('\\').slice(0,3).join('\\') || d.path;
     renderDrives(d.drives);
   });
 }
 
-function activePanel() {
-  return panels[activePanelId] || panels.left;
-}
+function AP() { return panels[activePID] || panels.left; }
+function setAP(id) { activePID = id; }
 
-function setActivePanel(id) {
-  activePanelId = id;
-}
-
-// ══════════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 // DUAL PANEL
-// ══════════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 function toggleDual() {
-  dualMode = !dualMode;
-  const resizer = document.getElementById('resizer');
-  const right = document.getElementById('panel-right');
-  const btn = document.getElementById('btn-toggle-dual');
-
-  if (dualMode) {
-    resizer.style.display = 'block';
-    right.style.display = 'flex';
-    btn.classList.add('active');
-    if (!panels.right) {
-      panels.right = new Panel('right');
-    }
+  dual = !dual;
+  const res = document.getElementById('resizer');
+  const rp = document.getElementById('panel-right');
+  const btn = document.getElementById('tl-dual');
+  if (dual) {
+    res.style.display = 'block'; rp.style.display = 'flex'; btn.classList.add('on');
+    if (!panels.right) panels.right = new Panel('right');
     initResizer();
   } else {
-    resizer.style.display = 'none';
-    right.style.display = 'none';
-    btn.classList.remove('active');
-    document.getElementById('panel-left').style.flex = '1';
+    res.style.display = 'none'; rp.style.display = 'none'; btn.classList.remove('on');
+    document.getElementById('panel-left').style.cssText = 'flex:1';
   }
 }
 
 function toggleSidebar() {
-  sidebarVisible = !sidebarVisible;
-  document.getElementById('sidebar').style.display = sidebarVisible ? 'block' : 'none';
-  document.getElementById('btn-toggle-sidebar').classList.toggle('active', sidebarVisible);
+  sidebarOn = !sidebarOn;
+  document.getElementById('sidebar').style.display = sidebarOn ? 'block' : 'none';
+  document.getElementById('tl-sidebar').classList.toggle('on', sidebarOn);
 }
 
-// ── Resizer ───────────────────────────────────────────────────────────────────
 function initResizer() {
-  const resizer = document.getElementById('resizer');
-  const left = document.getElementById('panel-left');
-  const right = document.getElementById('panel-right');
-  let dragging = false, startX, startW;
-
-  resizer.addEventListener('mousedown', e => {
-    dragging = true;
-    startX = e.clientX;
-    startW = left.offsetWidth;
-    resizer.classList.add('dragging');
-    document.body.style.userSelect = 'none';
-  });
-
-  document.addEventListener('mousemove', e => {
-    if (!dragging) return;
-    const diff = e.clientX - startX;
-    const newW = Math.max(200, startW + diff);
-    left.style.flex = 'none';
-    left.style.width = newW + 'px';
-  });
-
-  document.addEventListener('mouseup', () => {
-    if (dragging) { dragging = false; resizer.classList.remove('dragging'); document.body.style.userSelect = ''; }
-  });
+  const res = document.getElementById('resizer');
+  const lp = document.getElementById('panel-left');
+  let drag=false, sx, sw;
+  res.onmousedown = e => { drag=true; sx=e.clientX; sw=lp.offsetWidth; res.classList.add('on'); document.body.style.userSelect='none'; };
+  document.addEventListener('mousemove', e => { if (!drag) return; lp.style.cssText=`flex:none;width:${Math.max(180,sw+e.clientX-sx)}px`; });
+  document.addEventListener('mouseup', () => { if (drag) { drag=false; res.classList.remove('on'); document.body.style.userSelect=''; } });
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 // FILE OPERATIONS
-// ══════════════════════════════════════════════════════════════════════════════
-async function doMove(srcDir, name, destDir) {
-  if (srcDir === destDir) return;
-  const r = await fetch('/api/move', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ srcDir, name, destDir }) });
+// ═══════════════════════════════════════════════════════
+async function apiMove(srcDir, name, destDir) {
+  const r = await fetch('/api/move',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({srcDir,name,destDir})});
   const d = await r.json();
-  if (d.ok) toast('↔ Μετακινήθηκε: ' + name, 'success');
-  else toast('Σφάλμα: ' + d.error, 'error');
+  if (d.ok) toast('↔ Μετακινήθηκε: '+name,'ok');
+  else toast('Σφάλμα: '+d.error,'err');
 }
 
-async function doCopy(srcDir, name, destDir) {
-  const r = await fetch('/api/copy', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ srcDir, name, destDir }) });
+async function apiCopy(srcDir, name, destDir) {
+  const r = await fetch('/api/copy',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({srcDir,name,destDir})});
   const d = await r.json();
-  if (d.ok) { toast('📋 Αντιγράφηκε: ' + name, 'success'); panels.left.refresh(); panels.right?.refresh(); }
-  else toast('Σφάλμα: ' + d.error, 'error');
+  if (d.ok) { toast('📋 Αντιγράφηκε: '+name,'ok'); panels.left?.refresh(); panels.right?.refresh(); }
+  else toast('Σφάλμα: '+d.error,'err');
 }
 
-async function doDelete(dir, name) {
-  const r = await fetch('/api/delete', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ dir, name }) });
+async function apiDelete(dir, name) {
+  const r = await fetch('/api/delete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({dir,name})});
   const d = await r.json();
-  if (d.ok) { toast('🗑 Διαγράφηκε: ' + name, 'success'); panels.left.refresh(); panels.right?.refresh(); }
-  else toast('Σφάλμα: ' + d.error, 'error');
+  if (d.ok) { toast('🗑 Διαγράφηκε: '+name,'ok'); panels.left?.refresh(); panels.right?.refresh(); }
+  else toast('Σφάλμα: '+d.error,'err');
 }
 
 function showNewFolder() {
-  showModal('Νέος Φάκελος', 'Νέος φάκελος', async name => {
+  showModal('Νέος Φάκελος','Νέος φάκελος', async name => {
     if (!name) return;
-    const r = await fetch('/api/mkdir', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ dir: activePanel().tab.path, name }) });
+    const r = await fetch('/api/mkdir',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({dir:AP().t.path,name})});
     const d = await r.json();
-    if (d.ok) { toast('📁 Δημιουργήθηκε: ' + name, 'success'); activePanel().refresh(); }
-    else toast('Σφάλμα: ' + d.error, 'error');
+    if (d.ok) { toast('📁 Δημιουργήθηκε: '+name,'ok'); AP().refresh(); }
+    else toast('Σφάλμα: '+d.error,'err');
   });
 }
 
-// ── Clipboard ─────────────────────────────────────────────────────────────────
-function doCopyClip() {
-  const p = activePanel();
-  if (!p.tab.selected) return;
-  clipboard = { op:'copy', srcDir: p.tab.path, name: p.tab.selected };
-  toast('📋 Αντιγραφή: ' + p.tab.selected);
-  updatePasteBtn();
-}
-
-function doCutClip() {
-  const p = activePanel();
-  if (!p.tab.selected) return;
-  clipboard = { op:'cut', srcDir: p.tab.path, name: p.tab.selected };
-  toast('✂️ Αποκοπή: ' + p.tab.selected);
-  updatePasteBtn();
-}
-
-async function doPaste() {
-  if (!clipboard) return;
-  const destDir = activePanel().tab.path;
-  if (clipboard.op === 'copy') await doCopy(clipboard.srcDir, clipboard.name, destDir);
-  else { await doMove(clipboard.srcDir, clipboard.name, destDir); clipboard = null; }
-  updatePasteBtn();
-  panels.left.refresh(); panels.right?.refresh();
-}
-
-function updatePasteBtn() {
-  document.getElementById('btn-paste').style.display = clipboard ? 'flex' : 'none';
-}
-
-// ── Upload ────────────────────────────────────────────────────────────────────
-function triggerUpload() { document.getElementById('upload-input').click(); }
-
+function triggerUpload() { document.getElementById('upl-inp').click(); }
 async function doUpload(files) {
   const fd = new FormData();
-  for (const f of files) fd.append('files', f);
-  const r = await fetch('/api/upload?path=' + encodeURIComponent(activePanel().tab.path), { method:'POST', body:fd });
+  for (const f of files) fd.append('files',f);
+  const r = await fetch('/api/upload?path='+encodeURIComponent(AP().t.path),{method:'POST',body:fd});
   const d = await r.json();
-  if (d.ok) { toast('⬆ Ανέβηκαν ' + d.count + ' αρχεία', 'success'); activePanel().refresh(); }
+  if (d.ok) { toast('⬆ Ανέβηκαν '+d.count+' αρχεία','ok'); AP().refresh(); }
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
+// Clipboard
+function copyClip() { const p=AP(); if (!p.t.sel) return; clip={op:'copy',srcDir:p.t.path,name:p.t.sel}; updatePaste(); toast('📋 Αντιγραφή: '+p.t.sel); }
+function cutClip()  { const p=AP(); if (!p.t.sel) return; clip={op:'cut', srcDir:p.t.path,name:p.t.sel}; updatePaste(); toast('✂️ Αποκοπή: '+p.t.sel); }
+async function doPaste() {
+  if (!clip) return;
+  const dest = AP().t.path;
+  if (clip.op==='copy') await apiCopy(clip.srcDir,clip.name,dest);
+  else { await apiMove(clip.srcDir,clip.name,dest); clip=null; }
+  updatePaste();
+  panels.left?.refresh(); panels.right?.refresh();
+}
+function updatePaste() {
+  const show = !!clip;
+  document.getElementById('btn-paste-tb').style.display = show?'flex':'none';
+}
+
+// Row action helpers
+function raRename(pid, name) {
+  showModal('Μετονομασία', name, async n => {
+    if (!n||n===name) return;
+    const r = await fetch('/api/rename',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({dir:panels[pid].t.path,oldName:name,newName:n})});
+    const d = await r.json();
+    if (d.ok) { toast('✏️ '+n,'ok'); panels[pid].refresh(); }
+    else toast('Σφάλμα: '+d.error,'err');
+  });
+}
+function raDel(pid, name) { if (confirm('Διαγραφή "'+name+'";')) apiDelete(panels[pid].t.path, name); }
+
+// ═══════════════════════════════════════════════════════
 // CONTEXT MENU
-// ══════════════════════════════════════════════════════════════════════════════
-let ctxPanelId = null, ctxItemName = null;
+// ═══════════════════════════════════════════════════════
+let ctxPID=null, ctxName=null;
 
-function showCtx(event, panelId, name) {
-  event.preventDefault();
-  ctxPanelId = panelId;
-  ctxItemName = name;
-  setActivePanel(panelId);
-  panels[panelId].select(name);
-
-  const menu = document.getElementById('ctx-menu');
-  const item = panels[panelId].tab.items.find(i => i.name === name);
-  const isDir = item && item.isDir;
-
-  document.getElementById('ctx-open').textContent = ''; // reset
-  document.getElementById('ctx-open').innerHTML = `<span class="ctx-icon">${isDir?'📂':'📄'}</span> ${isDir ? 'Άνοιγμα' : 'Άνοιγμα'}`;
-  document.getElementById('ctx-paste').style.display = clipboard ? 'flex' : 'none';
-
-  menu.classList.add('open');
-
-  let x = event.clientX, y = event.clientY;
-  if (x + 220 > window.innerWidth) x = window.innerWidth - 225;
-  if (y + 280 > window.innerHeight) y = window.innerHeight - 285;
-  menu.style.left = x + 'px';
-  menu.style.top = y + 'px';
+function ctxShow(e, pid, name) {
+  e.preventDefault(); e.stopPropagation();
+  ctxPID=pid; ctxName=name;
+  setAP(pid); panels[pid].select(name);
+  const item = panels[pid].t.items.find(i=>i.name===name);
+  document.getElementById('ci-paste').style.display = clip?'flex':'none';
+  ['ci-open','ci-copy','ci-cut','ci-rename','ci-del'].forEach(id=>document.getElementById(id).style.display='flex');
+  const m = document.getElementById('ctx');
+  m.classList.add('open');
+  let x=e.clientX, y=e.clientY;
+  if (x+220>window.innerWidth) x=window.innerWidth-225;
+  if (y+260>window.innerHeight) y=window.innerHeight-265;
+  m.style.left=x+'px'; m.style.top=y+'px';
 }
 
-function showCtxEmpty(event, panelId) {
-  ctxPanelId = panelId;
-  ctxItemName = null;
-  event.preventDefault();
-  const menu = document.getElementById('ctx-menu');
-  ['ctx-open','ctx-copy','ctx-cut','ctx-rename','ctx-delete'].forEach(id => {
-    document.getElementById(id).style.display = 'none';
-  });
-  document.getElementById('ctx-paste').style.display = clipboard ? 'flex' : 'none';
-  document.getElementById('ctx-newfolder').style.display = 'flex';
-  menu.classList.add('open');
-  menu.style.left = event.clientX + 'px';
-  menu.style.top = event.clientY + 'px';
+function ctxEmpty(e, pid) {
+  e.preventDefault();
+  ctxPID=pid; ctxName=null;
+  document.getElementById('ci-paste').style.display = clip?'flex':'none';
+  ['ci-open','ci-copy','ci-cut','ci-rename','ci-del'].forEach(id=>document.getElementById(id).style.display='none');
+  document.getElementById('ci-mkdir').style.display='flex';
+  const m=document.getElementById('ctx');
+  m.classList.add('open');
+  m.style.left=e.clientX+'px'; m.style.top=e.clientY+'px';
 }
 
-function closeCtx() {
-  const menu = document.getElementById('ctx-menu');
-  menu.classList.remove('open');
-  ['ctx-open','ctx-copy','ctx-cut','ctx-rename','ctx-delete','ctx-newfolder'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.style.display = 'flex';
-  });
+function ctxClose() {
+  document.getElementById('ctx').classList.remove('open');
+  ['ci-open','ci-copy','ci-cut','ci-rename','ci-del','ci-mkdir'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='flex';});
 }
 
-document.getElementById('ctx-open').onclick = () => { closeCtx(); panels[ctxPanelId].open(ctxItemName); };
-document.getElementById('ctx-copy').onclick = () => { closeCtx(); clipboard = { op:'copy', srcDir: panels[ctxPanelId].tab.path, name: ctxItemName }; updatePasteBtn(); toast('📋 Αντιγραφή: ' + ctxItemName); };
-document.getElementById('ctx-cut').onclick = () => { closeCtx(); clipboard = { op:'cut', srcDir: panels[ctxPanelId].tab.path, name: ctxItemName }; updatePasteBtn(); toast('✂️ Αποκοπή: ' + ctxItemName); };
-document.getElementById('ctx-paste').onclick = () => { closeCtx(); doPaste(); };
-document.getElementById('ctx-rename').onclick = () => { closeCtx(); showModal('Μετονομασία', ctxItemName, async n => {
-  if (!n || n === ctxItemName) return;
-  const r = await fetch('/api/rename', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ dir: panels[ctxPanelId].tab.path, oldName: ctxItemName, newName: n }) });
+document.getElementById('ci-open').onclick   = ()=>{ ctxClose(); panels[ctxPID].open(ctxName); };
+document.getElementById('ci-copy').onclick   = ()=>{ ctxClose(); clip={op:'copy',srcDir:panels[ctxPID].t.path,name:ctxName}; updatePaste(); toast('📋 Αντιγραφή: '+ctxName); };
+document.getElementById('ci-cut').onclick    = ()=>{ ctxClose(); clip={op:'cut',srcDir:panels[ctxPID].t.path,name:ctxName}; updatePaste(); toast('✂️ Αποκοπή: '+ctxName); };
+document.getElementById('ci-paste').onclick  = ()=>{ ctxClose(); doPaste(); };
+document.getElementById('ci-rename').onclick = ()=>{ ctxClose(); raRename(ctxPID, ctxName); };
+document.getElementById('ci-del').onclick    = ()=>{ ctxClose(); if (confirm('Διαγραφή "'+ctxName+'";')) apiDelete(panels[ctxPID].t.path, ctxName); };
+document.getElementById('ci-mkdir').onclick  = ()=>{ ctxClose(); showNewFolder(); };
+document.getElementById('ci-props').onclick  = async ()=>{
+  ctxClose();
+  const r = await fetch('/api/props?path='+encodeURIComponent(panels[ctxPID].t.path+'\\'+ctxName));
   const d = await r.json();
-  if (d.ok) { toast('✏️ Μετονομάστηκε σε: ' + n, 'success'); panels[ctxPanelId].refresh(); }
-  else toast('Σφάλμα: ' + d.error, 'error');
-}); };
-document.getElementById('ctx-delete').onclick = () => { closeCtx(); if (confirm('Διαγραφή "' + ctxItemName + '";')) doDelete(panels[ctxPanelId].tab.path, ctxItemName); };
-document.getElementById('ctx-newfolder').onclick = () => { closeCtx(); showNewFolder(); };
-document.getElementById('ctx-props').onclick = async () => {
-  closeCtx();
-  const r = await fetch('/api/props?path=' + encodeURIComponent(panels[ctxPanelId].tab.path + '\\' + ctxItemName));
-  const d = await r.json();
-  showModal('Ιδιότητες', null, null, `
-    <div class="props-grid">
-      <span class="pk">Όνομα:</span><span class="pv">${d.name}</span>
-      <span class="pk">Τύπος:</span><span class="pv">${d.isDir ? 'Φάκελος' : (d.ext || 'Αρχείο')}</span>
-      <span class="pk">Τοποθεσία:</span><span class="pv">${d.fullPath}</span>
-      <span class="pk">Μέγεθος:</span><span class="pv">${d.isDir ? '—' : formatSize(d.size)}</span>
-      <span class="pk">Δημιουργία:</span><span class="pv">${formatDate(d.created)}</span>
-      <span class="pk">Τροποποίηση:</span><span class="pv">${formatDate(d.modified)}</span>
-    </div>`);
+  showModal('Ιδιότητες',null,null,`<div class="props-grid">
+    <span class="pk">Όνομα:</span><span class="pv">${d.name}</span>
+    <span class="pk">Τύπος:</span><span class="pv">${d.isDir?'Φάκελος':(d.ext||'Αρχείο')}</span>
+    <span class="pk">Τοποθεσία:</span><span class="pv">${d.fullPath}</span>
+    <span class="pk">Μέγεθος:</span><span class="pv">${d.isDir?'—':fSize(d.size)}</span>
+    <span class="pk">Δημιουργία:</span><span class="pv">${fDate(d.created)}</span>
+    <span class="pk">Τροποποίηση:</span><span class="pv">${fDate(d.modified)}</span>
+  </div>`);
 };
 
-document.addEventListener('click', e => { if (!document.getElementById('ctx-menu').contains(e.target)) closeCtx(); });
+document.addEventListener('click', e=>{ if (!document.getElementById('ctx').contains(e.target)) ctxClose(); });
 
-// ══════════════════════════════════════════════════════════════════════════════
-// KEYBOARD SHORTCUTS
-// ══════════════════════════════════════════════════════════════════════════════
-document.addEventListener('keydown', e => {
-  if (document.activeElement.tagName === 'INPUT') return;
-  const p = activePanel();
-  if (e.key === 'F5') { e.preventDefault(); p.refresh(); }
-  if (e.key === 'F2' && p.tab.selected) { document.getElementById('ctx-rename').click(); }
-  if (e.key === 'Delete' && p.tab.selected) { if (confirm('Διαγραφή "' + p.tab.selected + '";')) doDelete(p.tab.path, p.tab.selected); }
-  if (e.ctrlKey && e.key === 'c') doCopyClip();
-  if (e.ctrlKey && e.key === 'x') doCutClip();
-  if (e.ctrlKey && e.key === 'v') doPaste();
-  if (e.key === 'Escape') { document.getElementById('img-preview').classList.remove('open'); closeCtx(); }
-  if (e.key === 'Backspace') { e.preventDefault(); p.goBack(); }
-  if (e.altKey && e.key === 'Enter' && p.tab.selected) document.getElementById('ctx-props').click();
-  if (e.ctrlKey && e.key === 't') { e.preventDefault(); p.newTab(); }
-  if (e.ctrlKey && e.key === 'w') { e.preventDefault(); if (p.tabs.length > 1) p.closeTab(p.activeTab); }
+// ═══════════════════════════════════════════════════════
+// KEYBOARD
+// ═══════════════════════════════════════════════════════
+document.addEventListener('keydown', e=>{
+  if (['INPUT','TEXTAREA'].includes(document.activeElement.tagName)) return;
+  const p = AP();
+  if (e.key==='F5') { e.preventDefault(); p.refresh(); }
+  if (e.key==='F2' && p.t.sel) raRename(p.id, p.t.sel);
+  if (e.key==='Delete' && p.t.sel) { if (confirm('Διαγραφή "'+p.t.sel+'";')) apiDelete(p.t.path, p.t.sel); }
+  if (e.ctrlKey && e.key==='c') copyClip();
+  if (e.ctrlKey && e.key==='x') cutClip();
+  if (e.ctrlKey && e.key==='v') doPaste();
+  if (e.ctrlKey && e.key==='t') { e.preventDefault(); p.addTab(); }
+  if (e.ctrlKey && e.key==='w') { e.preventDefault(); if (p.tabs.length>1) p.closeTab(p.ti); }
+  if (e.key==='Escape') { document.getElementById('imgprev').classList.remove('open'); ctxClose(); }
+  if (e.altKey && e.key==='ArrowLeft') { e.preventDefault(); p.goBack(); }
+  if (e.altKey && e.key==='ArrowRight') { e.preventDefault(); p.goForward(); }
+  if (e.altKey && e.key==='ArrowUp') { e.preventDefault(); p.goUp(); }
+  if (e.altKey && e.key==='Enter' && p.t.sel) document.getElementById('ci-props').click();
 });
 
-// ══════════════════════════════════════════════════════════════════════════════
-// UI HELPERS
-// ══════════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════
 function renderDrives(drives) {
-  if (!drives || !drives.length) return;
-  document.getElementById('drives-list').innerHTML = drives.map(d =>
-    `<div class="side-item" onclick="activePanel().navigate('${d.replace(/\\/g,'\\\\')}')" >
-      <span class="side-icon">💾</span>${d}
-    </div>`).join('');
+  if (!drives?.length) return;
+  document.getElementById('drives').innerHTML = drives.map(d=>
+    `<div class="side-item" onclick="AP().navigate('${d.replace(/\\/g,'\\\\')}')" ><span class="side-ico">💾</span>${d}</div>`).join('');
 }
 
-function fileIcon(item) {
+function fIcon(item) {
   if (item.isDir) return '📁';
   const e = item.ext;
-  if (IMG_EXTS.has(e)) return '🖼️';
+  if (IMGS.has(e)) return '🖼️';
   if (['.mp3','.wav','.flac','.ogg','.aac'].includes(e)) return '🎵';
   if (['.mp4','.avi','.mkv','.mov','.wmv'].includes(e)) return '🎬';
   if (['.pdf'].includes(e)) return '📄';
@@ -969,70 +826,64 @@ function fileIcon(item) {
   return '📄';
 }
 
-function formatSize(b) {
+function fSize(b) {
   if (!b) return '';
-  if (b < 1024) return b + ' B';
-  if (b < 1048576) return (b/1024).toFixed(1) + ' KB';
-  if (b < 1073741824) return (b/1048576).toFixed(1) + ' MB';
-  return (b/1073741824).toFixed(2) + ' GB';
+  if (b<1024) return b+' B';
+  if (b<1048576) return (b/1024).toFixed(1)+' KB';
+  if (b<1073741824) return (b/1048576).toFixed(1)+' MB';
+  return (b/1073741824).toFixed(2)+' GB';
 }
 
-function formatDate(iso) {
+function fDate(iso) {
   if (!iso) return '';
   const d = new Date(iso);
-  return d.toLocaleDateString('el-GR') + ' ' + d.toLocaleTimeString('el-GR', {hour:'2-digit',minute:'2-digit'});
+  return d.toLocaleDateString('el-GR')+' '+d.toLocaleTimeString('el-GR',{hour:'2-digit',minute:'2-digit'});
 }
 
 function esc(s) { return (s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
-function safeId(s) { return (s||'').replace(/[^a-zA-Z0-9_-]/g,'_'); }
+function sid(s) { return (s||'').replace(/[^a-zA-Z0-9_-]/g,'_'); }
 
 function toast(msg, type='') {
-  const container = document.getElementById('toast-container');
+  const c = document.getElementById('toasts');
   const el = document.createElement('div');
-  el.className = 'toast ' + type;
+  el.className = 'toast '+type;
   el.textContent = msg;
-  container.appendChild(el);
-  setTimeout(() => { el.style.opacity='0'; el.style.transition='opacity 0.3s'; setTimeout(()=>el.remove(),300); }, 2800);
+  c.appendChild(el);
+  setTimeout(()=>{ el.style.opacity='0'; el.style.transition='opacity .3s'; setTimeout(()=>el.remove(),300); }, 2600);
 }
 
-function showModal(title, defaultVal, onConfirm, customContent) {
-  const root = document.getElementById('modal-root');
-  root.innerHTML = `
-    <div class="modal-overlay" onclick="if(event.target===this)document.getElementById('modal-root').innerHTML=''">
+function showModal(title, defVal, onOk, custom) {
+  document.getElementById('mroot').innerHTML = `
+    <div class="moverlay" onclick="if(event.target===this)document.getElementById('mroot').innerHTML=''">
       <div class="modal">
         <h3>${title}</h3>
-        ${customContent || `<label>Όνομα</label><input type="text" id="modal-inp" value="${(defaultVal||'').replace(/"/g,'&quot;')}">`}
-        <div class="modal-btns">
-          <button class="btn-cancel" onclick="document.getElementById('modal-root').innerHTML=''">Άκυρο</button>
-          ${onConfirm ? `<button class="btn-primary" id="modal-ok">OK</button>` : `<button class="btn-primary" onclick="document.getElementById('modal-root').innerHTML=''">Κλείσιμο</button>`}
+        ${custom||`<label>Όνομα</label><input type="text" id="m-inp" value="${(defVal||'').replace(/"/g,'&quot;')}">`}
+        <div class="mbtns">
+          <button class="mbtn cancel" onclick="document.getElementById('mroot').innerHTML=''">Άκυρο</button>
+          ${onOk?`<button class="mbtn ok" id="m-ok">OK</button>`:`<button class="mbtn ok" onclick="document.getElementById('mroot').innerHTML=''">Κλείσιμο</button>`}
         </div>
       </div>
     </div>`;
-  if (onConfirm) {
-    const ok = document.getElementById('modal-ok');
-    ok.onclick = () => { const v = document.getElementById('modal-inp').value; document.getElementById('modal-root').innerHTML=''; onConfirm(v); };
-    const inp = document.getElementById('modal-inp');
-    if (inp) { inp.focus(); inp.select(); inp.onkeydown = e => { if(e.key==='Enter') ok.click(); if(e.key==='Escape') document.getElementById('modal-root').innerHTML=''; }; }
+  if (onOk) {
+    const ok = document.getElementById('m-ok');
+    ok.onclick = ()=>{ const v=document.getElementById('m-inp').value; document.getElementById('mroot').innerHTML=''; onOk(v); };
+    const inp = document.getElementById('m-inp');
+    if (inp) { inp.focus(); inp.select(); inp.onkeydown=e=>{ if(e.key==='Enter')ok.click(); if(e.key==='Escape')document.getElementById('mroot').innerHTML=''; }; }
   }
 }
 
 function showSettings() {
-  showModal('Ρυθμίσεις', null, null, `
-    <div style="font-size:12px;color:var(--text2);margin-bottom:16px">Επιλογές εμφάνισης context menu:</div>
-    <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px;cursor:pointer">
-      <input type="checkbox" checked> Εμφάνιση "Αντιγραφή"</label>
-    <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px;cursor:pointer">
-      <input type="checkbox" checked> Εμφάνιση "Αποκοπή"</label>
-    <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px;cursor:pointer">
-      <input type="checkbox" checked> Εμφάνιση "Ιδιότητες"</label>
-    <label style="display:flex;align-items:center;gap:8px;margin-bottom:16px;cursor:pointer">
-      <input type="checkbox" checked> Εμφάνιση "Νέος Φάκελος"</label>
+  showModal('Ρυθμίσεις',null,null,`
+    <p style="font-size:12px;color:var(--text2);margin-bottom:14px">Επιλογές context menu</p>
+    <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:12px;cursor:pointer"><input type="checkbox" checked> Αντιγραφή / Αποκοπή</label>
+    <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:12px;cursor:pointer"><input type="checkbox" checked> Ιδιότητες</label>
+    <label style="display:flex;align-items:center;gap:8px;margin-bottom:14px;font-size:12px;cursor:pointer"><input type="checkbox" checked> Νέος Φάκελος</label>
   `);
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
-// INIT
-// ══════════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
+// START
+// ═══════════════════════════════════════════════════════
 initPanels();
 </script>
 </body>
