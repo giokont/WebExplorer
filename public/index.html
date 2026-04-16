@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<title>Web Explorer</title>
+<style>
+:root {
+  --bg: #1c1c1c;
+  --bg2: #242424;
+  --bg3: #2c2c2c;
+  --bg4: #343434;
+  --border: #3a3a3a;
+  --border2: #444;
+  --text: #e0e0e0;
+  --text2: #aaa;
+  --text3: #777;
+  --accent: #0078d4;
+  --accent-hover: #1a8fe0;
+  --accent-bg: rgba(0,120,212,0.15);
+  --danger: #c42b1c;
+  --selected: #1a3a5c;
+  --selected-border: #0078d4;
+  --hover: #2e2e2e;
+  --tab-active: #1c1c1c;
+  --tab-inactive: #2a2a2a;
+  --radius: 6px;
+  --radius-sm: 4px;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Segoe UI',system-ui,sans-serif; background:var(--bg); color:var(--text); height:100vh; display:flex; flex-direction:column; overflow:hidden; font-size:13px; }
+
+/* ── TITLEBAR ── */
+#titlebar {
+  background:var(--bg2);
+  border-bottom:1px solid var(--border);
+  padding:0 12px;
+  display:flex;
+  align-items:center;
+  height:40px;
+  gap:8px;
+  flex-shrink:0;
+  -webkit-app-region:drag;
+}
+#titlebar .logo { font-size:15px; font-weight:600; color:var(--text); display:flex; align-items:center; gap:6px; -webkit-app-region:no-drag; }
+#titlebar .logo span { color:var(--accent); }
+#titlebar-spacer { flex:1; }
+.tb-icon-btn {
+  background:none; border:none; color:var(--text2); cursor:pointer;
+  padding:5px 8px; border-radius:var(--radius-sm); font-size:14px;
+  transition:background 0.12s, color 0.12s; -webkit-app-region:no-drag;
+}
+.tb-icon-btn:hover { background:var(--bg4); color:var(--text); }
+.tb-icon-btn.active { color:var(--accent); }
+
+/* ── TOOLBAR ── */
+#toolbar {
+  background:var(--bg2);
+  border-bottom:1px solid var(--border);
+  padding:5px 10px;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  flex-shrink:0;
+}
+.tb-btn {
+  background:var(--bg3); border:1px solid var(--border2); color:var(--text);
+  padding:4px 10px; border-radius:var(--radius-sm); cursor:pointer; font-size:12px;
+  display:flex; align-items:center; gap:4px; transition:background 0.12s; white-space:nowrap; flex-shrink:0;
+}
+.tb-btn:hover { background:var(--bg4); }
+.tb-btn svg { width:14px; height:14px; flex-shrink:0; }
+.tb-sep { width:1px; background:var(--border); height:20px; margin:0 2px; flex-shrink:0; }
+
+/* ── PANELS CONTAINER ── */
+#panels {
+  display:flex;
+  flex:1;
+  overflow:hidden;
+  gap:0;
+}
+
+/* ── PANEL RESIZER ── */
+#resizer {
+  width:4px;
+  background:var(--border);
+  cursor:col-resize;
+  flex-shrink:0;
+  transition:background 0.12s;
+}
+#resizer:hover, #resizer.dragging { background:var(--accent); }
+
+/* ── PANEL ── */
+.panel {
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  flex:1;
+  min-width:200px;
+}
+
+/* ── TABS ── */
+.tab-bar {
+  background:var(--bg3);
+  border-bottom:1px solid var(--border);
+  display:flex;
+  align-items:flex-end;
+  padding:0 6px;
+  gap:2px;
+  flex-shrink:0;
+  overflow-x:auto;
+  scrollbar-width:none;
+}
+.tab-bar::-webkit-scrollbar { display:none; }
+
+.tab {
+  background:var(--tab-inactive);
+  border:1px solid var(--border);
+  border-bottom:none;
+  padding:5px 10px 5px 10px;
+  border-radius:var(--radius-sm) var(--radius-sm) 0 0;
+  cursor:pointer;
+  font-size:12px;
+  white-space:nowrap;
+  display:flex;
+  align-items:center;
+  gap:5px;
+  max-width:160px;
+  color:var(--text2);
+  position:relative;
+  bottom:-1px;
+  transition:background 0.1s;
+}
+.tab:hover { background:var(--bg4); color:var(--text); }
+.tab.active { background:var(--tab-active); color:var(--text); border-bottom:1px solid var(--tab-active); z-index:1; }
+.tab .tab-name { overflow:hidden; text-overflow:ellipsis; max-width:100px; }
+.tab .tab-close {
+  font-size:11px; color:var(--text3); cursor:pointer; padding:0 2px;
+  border-radius:3px; line-height:1;
+}
+.tab .tab-close:hover { background:var(--bg4); color:var(--text); }
+.tab-new {
+  background:none; border:none; color:var(--text3);
+  padding:4px 8px; cursor:pointer; font-size:16px; line-height:1;
+  border-radius:var(--radius-sm); transition:color 0.12s;
+  margin-bottom:2px;
+}
+.tab-new:hover { color:var(--text); background:var(--bg4); }
+
+/* ── ADDRESS BAR ── */
+.addr-bar-wrap {
+  background:var(--bg2);
+  border-bottom:1px solid var(--border);
+  padding:5px 8px;
+  display:flex;
+  align-items:center;
+  gap:5px;
+  flex-shrink:0;
+}
+.nav-btn {
+  background:none; border:none; color:var(--text2); cursor:pointer;
+  padding:4px 6px; border-radius:var(--radius-sm); font-size:13px; line-height:1;
+  transition:background 0.12s;
+}
+.nav-btn:hover:not(:disabled) { background:var(--bg4); color:var(--text); }
+.nav-btn:disabled { opacity:0.3; cursor:default; }
+.addr-bar {
+  flex:1; background:var(--bg3); border:1px solid var(--border);
+  border-radius:var(--radius-sm); padding:4px 8px; color:var(--text);
+  font-size:12px; outline:none; font-family:inherit;
+}
+.addr-bar:focus { border-color:var(--accent); }
+.search-wrap { position:relative; }
+.search-input {
+  background:var(--bg3); border:1px solid var(--border);
+  border-radius:var(--radius-sm); padding:4px 8px 4px 26px;
+  color:var(--text); font-size:12px; outline:none; width:160px;
+}
+.search-input:focus { border-color:var(--accent); width:200px; }
+.search-icon { position:absolute; left:7px; top:50%; transform:translateY(-50%); color:var(--text3); font-size:12px; pointer-events:none; }
+
+/* ── FILE LIST ── */
+.file-list-wrap { flex:1; overflow-y:auto; overflow-x:hidden; }
+.file-table { width:100%; border-collapse:collapse; }
+.file-table thead th {
+  background:var(--bg3); padding:6px 10px; text-align:left;
+  color:var(--text2); font-weight:400; border-bottom:1px solid var(--border);
+  position:sticky; top:0; cursor:pointer; user-select:none; z-index:2; font-size:12px;
+}
+.file-table thead th:hover { color:var(--text); }
+.sort-arrow { font-size:10px; margin-left:3px; }
+.file-table tbody tr {
+  border-bottom:1px solid rgba(58,58,58,0.5);
+  cursor:pointer; transition:background 0.08s;
+}
+.file-table tbody tr:hover { background:var(--hover); }
+.file-table tbody tr.selected { background:var(--selected); outline:1px solid var(--selected-border); }
+.file-table tbody tr.drag-over-row { background:rgba(0,120,212,0.25) !important; outline:2px dashed var(--accent); }
+.file-table td { padding:5px 10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:12px; }
+.file-table td:first-child { max-width:0; width:99%; }
+.file-name-cell { display:flex; align-items:center; gap:6px; }
+.file-icon { font-size:14px; flex-shrink:0; }
+.file-name-text { overflow:hidden; text-overflow:ellipsis; }
+.file-table td.muted { color:var(--text2); }
+
+/* ── STATUSBAR ── */
+.panel-status {
+  background:var(--bg2);
+  border-top:1px solid var(--border);
+  padding:3px 10px;
+  font-size:11px;
+  color:var(--text3);
+  display:flex;
+  gap:16px;
+  flex-shrink:0;
+}
+
+/* ── CONTEXT MENU ── */
+#ctx-menu {
+  position:fixed; background:var(--bg3); border:1px solid var(--border2);
+  border-radius:var(--radius); padding:4px; min-width:200px; z-index:999;
+  box-shadow:0 8px 24px rgba(0,0,0,0.5); display:none;
+}
+#ctx-menu.open { display:block; }
+.ctx-item {
+  padding:6px 14px; border-radius:var(--radius-sm); cursor:pointer;
+  display:flex; align-items:center; gap:8px; font-size:12px; color:var(--text);
+  transition:background 0.08s;
+}
+.ctx-item:hover { background:var(--accent-bg); color:var(--accent); }
+.ctx-item.danger:hover { background:rgba(196,43,28,0.15); color:#f08080; }
+.ctx-item .ctx-icon { width:16px; text-align:center; flex-shrink:0; }
+.ctx-item .ctx-shortcut { margin-left:auto; color:var(--text3); font-size:11px; }
+.ctx-sep { height:1px; background:var(--border); margin:4px 8px; }
+.ctx-group-label { padding:4px 14px 2px; font-size:10px; color:var(--text3); text-transform:uppercase; letter-spacing:0.8px; }
+
+/* ── SIDEBAR ── */
+#sidebar {
+  width:200px;
+  background:var(--bg2);
+  border-right:1px solid var(--border);
+  overflow-y:auto;
+  flex-shrink:0;
+  padding:8px 0;
+}
+.side-section { margin-bottom:4px; }
+.side-title { font-size:10px; color:var(--text3); padding:6px 14px 3px; text-transform:uppercase; letter-spacing:0.8px; }
+.side-item {
+  padding:5px 12px; cursor:pointer; display:flex; align-items:center; gap:7px;
+  border-radius:var(--radius-sm); margin:1px 6px; font-size:12px; color:var(--text2);
+  transition:background 0.1s; white-space:nowrap; overflow:hidden;
+}
+.side-item:hover { background:var(--bg4); color:var(--text); }
+.side-item.active { background:var(--accent-bg); color:var(--accent); }
+.side-item .side-icon { font-size:13px; flex-shrink:0; }
+
+/* ── MODAL ── */
+.modal-overlay {
+  position:fixed; inset:0; background:rgba(0,0,0,0.6);
+  display:flex; align-items:center; justify-content:center; z-index:800;
+}
+.modal {
+  background:var(--bg3); border:1px solid var(--border2); border-radius:10px;
+  padding:24px; min-width:360px; max-width:500px; width:90vw;
+  box-shadow:0 16px 40px rgba(0,0,0,0.6);
+}
+.modal h3 { font-size:14px; font-weight:600; margin-bottom:16px; }
+.modal label { display:block; font-size:11px; color:var(--text2); margin-bottom:5px; }
+.modal input[type=text] {
+  width:100%; background:var(--bg); border:1px solid var(--border2);
+  border-radius:var(--radius-sm); color:var(--text); padding:7px 10px;
+  font-size:13px; outline:none; margin-bottom:16px;
+}
+.modal input[type=text]:focus { border-color:var(--accent); }
+.modal-btns { display:flex; gap:8px; justify-content:flex-end; }
+.btn-primary { background:var(--accent); border:none; color:#fff; padding:6px 18px; border-radius:var(--radius-sm); cursor:pointer; font-size:12px; }
+.btn-primary:hover { background:var(--accent-hover); }
+.btn-cancel { background:var(--bg4); border:1px solid var(--border2); color:var(--text); padding:6px 18px; border-radius:var(--radius-sm); cursor:pointer; font-size:12px; }
+.btn-cancel:hover { background:var(--bg3); }
+
+/* ── PROPERTIES MODAL ── */
+.props-grid { display:grid; grid-template-columns:110px 1fr; gap:6px 12px; font-size:12px; margin-bottom:16px; }
+.props-grid .pk { color:var(--text2); }
+.props-grid .pv { color:var(--text); word-break:break-all; }
+
+/* ── IMAGE PREVIEW ── */
+#img-preview {
+  position:fixed; inset:0; background:rgba(0,0,0,0.88);
+  display:none; align-items:center; justify-content:center; z-index:900; cursor:zoom-out;
+}
+#img-preview.open { display:flex; }
+#img-preview img { max-width:90vw; max-height:90vh; border-radius:8px; }
+
+/* ── TOAST ── */
+#toast-container { position:fixed; bottom:20px; right:20px; display:flex; flex-direction:column; gap:8px; z-index:1000; }
+.toast {
+  background:var(--bg3); border:1px solid var(--border2); border-radius:var(--radius);
+  padding:10px 16px; font-size:12px; color:var(--text); box-shadow:0 4px 16px rgba(0,0,0,0.4);
+  display:flex; align-items:center; gap:8px; animation:slideIn 0.2s ease;
+  max-width:320px;
+}
+.toast.success { border-left:3px solid #3a8f3a; }
+.toast.error { border-left:3px solid var(--danger); }
+@keyframes slideIn { from { transform:translateX(20px); opacity:0; } to { transform:translateX(0); opacity:1; } }
+
+/* ── DRAG INDICATOR ── */
+.drag-ghost { position:fixed; pointer-events:none; z-index:9999; background:var(--bg3); border:1px solid var(--accent); border-radius:var(--radius-sm); padding:5px 10px; font-size:12px; opacity:0.9; }
+
+::-webkit-scrollbar { width:7px; height:7px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--bg4); border-radius:4px; }
+::-webkit-scrollbar-thumb:hover { background:var(--border2); }
+</style>
+</head>
+<body>
+
+<!-- TITLEBAR -->
+<div id="titlebar">
+  <div class="logo">🗂 <span>Web</span>Explorer</div>
+  <div id="titlebar-spacer"></div>
+  <button class="tb-icon-btn" id="btn-toggle-sidebar" title="Sidebar" onclick="toggleSidebar()">☰</button>
+  <button class="tb-icon-btn" id="btn-toggle-dual" title="Dual Panel" onclick="toggleDual()">⊞</button>
+  <button class="tb-icon-btn" title="Ρυθμίσεις" onclick="showSettings()">⚙</button>
+</div>
+
+<!-- TOOLBAR -->
+<div id="toolbar">
+  <button class="tb-btn" onclick="activePanel().goUp()">
+    <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1L1 8h4v7h6V8h4L8 1z"/></svg> Επάνω
+  </button>
+  <div class="tb-sep"></div>
+  <button class="tb-btn" onclick="showNewFolder()">
+    <svg viewBox="0 0 16 16" fill="currentColor"><path d="M1 3a1 1 0 011-1h4l2 2h6a1 1 0 011 1v7a1 1 0 01-1 1H2a1 1 0 01-1-1V3zm7 4H5v1h2v2h1V8h2V7H8V5H7v2z"/></svg> Νέος Φάκελος
+  </button>
+  <button class="tb-btn" onclick="triggerUpload()">
+    <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1l-5 5h3v5h4V6h3L8 1zM2 13h12v1H2v-1z"/></svg> Upload
+  </button>
+  <input id="upload-input" type="file" multiple style="display:none" onchange="doUpload(this.files)">
+  <div class="tb-sep"></div>
+  <button class="tb-btn" id="btn-paste" onclick="doPaste()" style="display:none">
+    <svg viewBox="0 0 16 16" fill="currentColor"><path d="M5 1h6v2H5V1zM3 3h2v1h6V3h2v11H3V3zm2 3v1h6V6H5zm0 2v1h6V8H5zm0 2v1h4v-1H5z"/></svg> Επικόλληση
+  </button>
+  <div class="tb-sep"></div>
+  <button class="tb-btn" onclick="activePanel().refresh()">⟳ Ανανέωση</button>
+</div>
+
+<!-- MAIN -->
+<div id="main" style="display:flex;flex:1;overflow:hidden;">
+
+  <!-- SIDEBAR -->
+  <div id="sidebar">
+    <div class="side-section">
+      <div class="side-title">Γρήγορη Πρόσβαση</div>
+      <div class="side-item" onclick="activePanel().navigate(homeDir)"><span class="side-icon">🏠</span> Αρχική</div>
+      <div class="side-item" onclick="activePanel().navigate(homeDir+'\\Desktop')"><span class="side-icon">🖥️</span> Επιφάνεια Εργ.</div>
+      <div class="side-item" onclick="activePanel().navigate(homeDir+'\\Documents')"><span class="side-icon">📁</span> Έγγραφα</div>
+      <div class="side-item" onclick="activePanel().navigate(homeDir+'\\Downloads')"><span class="side-icon">⬇️</span> Λήψεις</div>
+      <div class="side-item" onclick="activePanel().navigate(homeDir+'\\Pictures')"><span class="side-icon">🖼️</span> Εικόνες</div>
+    </div>
+    <div class="side-section">
+      <div class="side-title">Δίσκοι</div>
+      <div id="drives-list"></div>
+    </div>
+  </div>
+
+  <!-- PANELS -->
+  <div id="panels" style="flex:1;display:flex;overflow:hidden;">
+    <div id="panel-left" class="panel"></div>
+    <div id="resizer" style="display:none"></div>
+    <div id="panel-right" class="panel" style="display:none"></div>
+  </div>
+</div>
+
+<!-- CONTEXT MENU -->
+<div id="ctx-menu">
+  <div class="ctx-item" id="ctx-open"><span class="ctx-icon">📂</span> Άνοιγμα</div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item" id="ctx-copy"><span class="ctx-icon">📋</span> Αντιγραφή <span class="ctx-shortcut">Ctrl+C</span></div>
+  <div class="ctx-item" id="ctx-cut"><span class="ctx-icon">✂️</span> Αποκοπή <span class="ctx-shortcut">Ctrl+X</span></div>
+  <div class="ctx-item" id="ctx-paste"><span class="ctx-icon">📌</span> Επικόλληση <span class="ctx-shortcut">Ctrl+V</span></div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item" id="ctx-rename"><span class="ctx-icon">✏️</span> Μετονομασία <span class="ctx-shortcut">F2</span></div>
+  <div class="ctx-item danger" id="ctx-delete"><span class="ctx-icon">🗑️</span> Διαγραφή <span class="ctx-shortcut">Del</span></div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item" id="ctx-newfolder"><span class="ctx-icon">📁</span> Νέος Φάκελος</div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item" id="ctx-props"><span class="ctx-icon">ℹ️</span> Ιδιότητες <span class="ctx-shortcut">Alt+Enter</span></div>
+</div>
+
+<!-- IMAGE PREVIEW -->
+<div id="img-preview" onclick="document.getElementById('img-preview').classList.remove('open')">
+  <img id="img-preview-src" src="" alt="">
+</div>
+
+<!-- TOAST -->
+<div id="toast-container"></div>
+
+<!-- MODAL CONTAINER -->
+<div id="modal-root"></div>
+
+<script>
+// ══════════════════════════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════════════════════════
+let homeDir = 'C:\\Users';
+let dualMode = false;
+let sidebarVisible = true;
+let activePanelId = 'left';
+let clipboard = null; // { op:'copy'|'cut', srcDir, name }
+let dragData = null;
+
+const IMG_EXTS = new Set(['.jpg','.jpeg','.png','.gif','.bmp','.webp','.svg','.ico','.tiff']);
+
+// ══════════════════════════════════════════════════════════════════════════════
+// PANEL CLASS
+// ══════════════════════════════════════════════════════════════════════════════
+class Panel {
+  constructor(id) {
+    this.id = id;
+    this.el = document.getElementById('panel-' + id);
+    this.tabs = [{ path: homeDir, history: [], future: [], items: [], selected: null, sortKey:'name', sortAsc:true, name:'Αρχική' }];
+    this.activeTab = 0;
+    this.build();
+  }
+
+  get tab() { return this.tabs[this.activeTab]; }
+
+  build() {
+    this.el.innerHTML = `
+      <div class="tab-bar" id="tabbar-${this.id}"></div>
+      <div class="addr-bar-wrap">
+        <button class="nav-btn" id="back-${this.id}" onclick="panels.${this.id}.goBack()" title="Πίσω">‹</button>
+        <button class="nav-btn" id="fwd-${this.id}" onclick="panels.${this.id}.goForward()" title="Εμπρός">›</button>
+        <button class="nav-btn" onclick="panels.${this.id}.goUp()" title="Επάνω">↑</button>
+        <input class="addr-bar" id="addr-${this.id}" type="text"
+          onkeydown="if(event.key==='Enter')panels.${this.id}.navigate(this.value)"
+          onfocus="this.select()">
+        <div class="search-wrap">
+          <span class="search-icon">🔍</span>
+          <input class="search-input" id="search-${this.id}" type="text" placeholder="Αναζήτηση..."
+            onkeydown="if(event.key==='Enter')panels.${this.id}.doSearch(this.value)">
+        </div>
+      </div>
+      <div class="file-list-wrap" id="list-wrap-${this.id}"
+        ondragover="event.preventDefault()"
+        ondrop="panels.${this.id}.onDropPanel(event)">
+        <table class="file-table">
+          <thead>
+            <tr>
+              <th onclick="panels.${this.id}.sortBy('name')">Όνομα <span class="sort-arrow" id="sa-name-${this.id}">↑</span></th>
+              <th onclick="panels.${this.id}.sortBy('modified')" style="width:160px">Τροποποίηση <span class="sort-arrow" id="sa-modified-${this.id}"></span></th>
+              <th onclick="panels.${this.id}.sortBy('size')" style="width:90px">Μέγεθος <span class="sort-arrow" id="sa-size-${this.id}"></span></th>
+              <th onclick="panels.${this.id}.sortBy('ext')" style="width:70px">Τύπος <span class="sort-arrow" id="sa-ext-${this.id}"></span></th>
+            </tr>
+          </thead>
+          <tbody id="tbody-${this.id}"></tbody>
+        </table>
+      </div>
+      <div class="panel-status" id="status-${this.id}">
+        <span id="status-count-${this.id}">0 στοιχεία</span>
+        <span id="status-sel-${this.id}"></span>
+      </div>`;
+    this.renderTabs();
+    this.load(homeDir);
+  }
+
+  // ── Tabs ──────────────────────────────────────────────────────────────────
+  renderTabs() {
+    const bar = document.getElementById('tabbar-' + this.id);
+    bar.innerHTML = this.tabs.map((t,i) => `
+      <div class="tab ${i===this.activeTab?'active':''}" onclick="panels.${this.id}.switchTab(${i})">
+        <span class="tab-name">${t.name}</span>
+        ${this.tabs.length > 1 ? `<span class="tab-close" onclick="event.stopPropagation();panels.${this.id}.closeTab(${i})">✕</span>` : ''}
+      </div>`).join('') +
+      `<button class="tab-new" onclick="panels.${this.id}.newTab()" title="Νέα καρτέλα">+</button>`;
+  }
+
+  newTab(path) {
+    this.tabs.push({ path: path||homeDir, history:[], future:[], items:[], selected:null, sortKey:'name', sortAsc:true, name:'Νέα καρτέλα' });
+    this.activeTab = this.tabs.length - 1;
+    this.renderTabs();
+    this.load(path||homeDir);
+  }
+
+  switchTab(i) {
+    this.activeTab = i;
+    this.renderTabs();
+    this.renderFiles();
+    document.getElementById('addr-' + this.id).value = this.tab.path;
+  }
+
+  closeTab(i) {
+    this.tabs.splice(i, 1);
+    if (this.activeTab >= this.tabs.length) this.activeTab = this.tabs.length - 1;
+    this.renderTabs();
+    this.renderFiles();
+  }
+
+  // ── Navigation ────────────────────────────────────────────────────────────
+  async load(p) {
+    try {
+      const r = await fetch('/api/list?path=' + encodeURIComponent(p));
+      const data = await r.json();
+      if (data.error) { toast('Σφάλμα: ' + data.error, 'error'); return; }
+
+      this.tab.path = data.path;
+      this.tab.items = data.items;
+      this.tab.selected = null;
+      this.tab.name = data.path.split('\\').pop() || data.path;
+      if (!this.tab.name) this.tab.name = data.path;
+
+      document.getElementById('addr-' + this.id).value = data.path;
+      renderDrives(data.drives);
+      this.renderTabs();
+      this.renderFiles();
+      this.updateNavBtns();
+    } catch(e) { toast('Σφάλμα σύνδεσης', 'error'); }
+  }
+
+  navigate(p) {
+    if (!p) return;
+    this.tab.history.push(this.tab.path);
+    this.tab.future = [];
+    this.load(p);
+  }
+
+  goBack() {
+    if (!this.tab.history.length) return;
+    this.tab.future.push(this.tab.path);
+    this.load(this.tab.history.pop());
+  }
+
+  goForward() {
+    if (!this.tab.future.length) return;
+    this.tab.history.push(this.tab.path);
+    this.load(this.tab.future.pop());
+  }
+
+  goUp() {
+    const p = this.tab.path;
+    const up = p.match(/^[A-Z]:\\$/) ? p : p.replace(/\\[^\\]+$/, '') || p.slice(0,3);
+    if (up !== p) this.navigate(up);
+  }
+
+  refresh() { this.load(this.tab.path); }
+
+  updateNavBtns() {
+    const b = document.getElementById('back-' + this.id);
+    const f = document.getElementById('fwd-' + this.id);
+    if (b) b.disabled = !this.tab.history.length;
+    if (f) f.disabled = !this.tab.future.length;
+  }
+
+  // ── Render ────────────────────────────────────────────────────────────────
+  renderFiles() {
+    const items = [...this.tab.items];
+    const { sortKey, sortAsc } = this.tab;
+
+    // Sort arrows
+    ['name','modified','size','ext'].forEach(k => {
+      const el = document.getElementById('sa-' + k + '-' + this.id);
+      if (el) el.textContent = k === sortKey ? (sortAsc ? '↑' : '↓') : '';
+    });
+
+    items.sort((a,b) => {
+      if (a.isDir && !b.isDir) return -1;
+      if (!a.isDir && b.isDir) return 1;
+      let va = a[sortKey], vb = b[sortKey];
+      if (sortKey === 'size') { va = a.size; vb = b.size; }
+      if (va < vb) return sortAsc ? -1 : 1;
+      if (va > vb) return sortAsc ? 1 : -1;
+      return 0;
+    });
+
+    const tbody = document.getElementById('tbody-' + this.id);
+    if (!tbody) return;
+    tbody.innerHTML = items.map(item => `
+      <tr id="row-${this.id}-${safeId(item.name)}"
+        class="${this.tab.selected===item.name?'selected':''}"
+        onclick="panels.${this.id}.select('${esc(item.name)}')"
+        ondblclick="panels.${this.id}.open('${esc(item.name)}')"
+        oncontextmenu="showCtx(event,'${this.id}','${esc(item.name)}')"
+        draggable="true"
+        ondragstart="panels.${this.id}.onDragStart(event,'${esc(item.name)}')"
+        ondragover="panels.${this.id}.onDragOver(event,'${esc(item.name)}')"
+        ondragleave="panels.${this.id}.onDragLeave(event,'${esc(item.name)}')"
+        ondrop="panels.${this.id}.onDrop(event,'${esc(item.name)}')">
+        <td>
+          <div class="file-name-cell">
+            <span class="file-icon">${fileIcon(item)}</span>
+            <span class="file-name-text">${item.name}</span>
+          </div>
+        </td>
+        <td class="muted">${formatDate(item.modified)}</td>
+        <td class="muted">${item.isDir ? '' : formatSize(item.size)}</td>
+        <td class="muted">${item.ext ? item.ext.slice(1).toUpperCase() : (item.isDir ? 'Φάκελος' : '')}</td>
+      </tr>`).join('');
+
+    const cnt = items.length;
+    const files = items.filter(i => !i.isDir).length;
+    document.getElementById('status-count-' + this.id).textContent =
+      cnt + ' στοιχεία' + (files ? ' (' + files + ' αρχεία)' : '');
+    document.getElementById('status-sel-' + this.id).textContent =
+      this.tab.selected ? 'Επιλεγμένο: ' + this.tab.selected : '';
+  }
+
+  sortBy(key) {
+    if (this.tab.sortKey === key) this.tab.sortAsc = !this.tab.sortAsc;
+    else { this.tab.sortKey = key; this.tab.sortAsc = true; }
+    this.renderFiles();
+  }
+
+  select(name) {
+    this.tab.selected = name;
+    setActivePanel(this.id);
+    this.renderFiles();
+    updatePasteBtn();
+  }
+
+  open(name) {
+    const item = this.tab.items.find(i => i.name === name);
+    if (!item) return;
+    if (item.isDir) {
+      this.navigate(this.tab.path + '\\' + name);
+    } else if (IMG_EXTS.has(item.ext)) {
+      document.getElementById('img-preview-src').src = '/api/image?path=' + encodeURIComponent(this.tab.path + '\\' + name);
+      document.getElementById('img-preview').classList.add('open');
+    }
+  }
+
+  // ── Drag & Drop ───────────────────────────────────────────────────────────
+  onDragStart(event, name) {
+    dragData = { srcDir: this.tab.path, name, panelId: this.id };
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('text/plain', name);
+  }
+
+  onDragOver(event, name) {
+    event.preventDefault();
+    const item = this.tab.items.find(i => i.name === name);
+    if (item && item.isDir) {
+      const row = document.getElementById('row-' + this.id + '-' + safeId(name));
+      if (row) row.classList.add('drag-over-row');
+    }
+  }
+
+  onDragLeave(event, name) {
+    const row = document.getElementById('row-' + this.id + '-' + safeId(name));
+    if (row) row.classList.remove('drag-over-row');
+  }
+
+  async onDrop(event, name) {
+    event.preventDefault();
+    if (!dragData) return;
+    const item = this.tab.items.find(i => i.name === name);
+    const destDir = (item && item.isDir) ? this.tab.path + '\\' + name : this.tab.path;
+    await doMove(dragData.srcDir, dragData.name, destDir);
+    dragData = null;
+    this.refresh();
+    if (panels.left.tab.path === dragData?.srcDir || panels.right?.tab.path === dragData?.srcDir) {
+      panels.left.refresh(); panels.right?.refresh();
+    }
+  }
+
+  async onDropPanel(event) {
+    event.preventDefault();
+    if (!dragData) return;
+    const destDir = this.tab.path;
+    if (dragData.srcDir === destDir) return;
+    await doMove(dragData.srcDir, dragData.name, destDir);
+    dragData = null;
+    panels.left.refresh();
+    if (panels.right) panels.right.refresh();
+  }
+
+  async doSearch(q) {
+    if (!q) { this.refresh(); return; }
+    const r = await fetch('/api/search?dir=' + encodeURIComponent(this.tab.path) + '&query=' + encodeURIComponent(q));
+    const data = await r.json();
+    this.tab.items = data.results.map(r => ({ name: r.name + ' (' + r.path + ')', isDir: r.isDir, size: 0, modified: '', ext: '' }));
+    this.renderFiles();
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// PANELS INIT
+// ══════════════════════════════════════════════════════════════════════════════
+const panels = { left: null, right: null };
+
+function initPanels() {
+  panels.left = new Panel('left');
+  // Fetch home dir
+  fetch('/api/list?path=').then(r=>r.json()).then(d => {
+    homeDir = d.path.split('\\').slice(0,3).join('\\') || d.path;
+    renderDrives(d.drives);
+  });
+}
+
+function activePanel() {
+  return panels[activePanelId] || panels.left;
+}
+
+function setActivePanel(id) {
+  activePanelId = id;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// DUAL PANEL
+// ══════════════════════════════════════════════════════════════════════════════
+function toggleDual() {
+  dualMode = !dualMode;
+  const resizer = document.getElementById('resizer');
+  const right = document.getElementById('panel-right');
+  const btn = document.getElementById('btn-toggle-dual');
+
+  if (dualMode) {
+    resizer.style.display = 'block';
+    right.style.display = 'flex';
+    btn.classList.add('active');
+    if (!panels.right) {
+      panels.right = new Panel('right');
+    }
+    initResizer();
+  } else {
+    resizer.style.display = 'none';
+    right.style.display = 'none';
+    btn.classList.remove('active');
+    document.getElementById('panel-left').style.flex = '1';
+  }
+}
+
+function toggleSidebar() {
+  sidebarVisible = !sidebarVisible;
+  document.getElementById('sidebar').style.display = sidebarVisible ? 'block' : 'none';
+  document.getElementById('btn-toggle-sidebar').classList.toggle('active', sidebarVisible);
+}
+
+// ── Resizer ───────────────────────────────────────────────────────────────────
+function initResizer() {
+  const resizer = document.getElementById('resizer');
+  const left = document.getElementById('panel-left');
+  const right = document.getElementById('panel-right');
+  let dragging = false, startX, startW;
+
+  resizer.addEventListener('mousedown', e => {
+    dragging = true;
+    startX = e.clientX;
+    startW = left.offsetWidth;
+    resizer.classList.add('dragging');
+    document.body.style.userSelect = 'none';
+  });
+
+  document.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    const diff = e.clientX - startX;
+    const newW = Math.max(200, startW + diff);
+    left.style.flex = 'none';
+    left.style.width = newW + 'px';
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (dragging) { dragging = false; resizer.classList.remove('dragging'); document.body.style.userSelect = ''; }
+  });
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// FILE OPERATIONS
+// ══════════════════════════════════════════════════════════════════════════════
+async function doMove(srcDir, name, destDir) {
+  if (srcDir === destDir) return;
+  const r = await fetch('/api/move', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ srcDir, name, destDir }) });
+  const d = await r.json();
+  if (d.ok) toast('↔ Μετακινήθηκε: ' + name, 'success');
+  else toast('Σφάλμα: ' + d.error, 'error');
+}
+
+async function doCopy(srcDir, name, destDir) {
+  const r = await fetch('/api/copy', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ srcDir, name, destDir }) });
+  const d = await r.json();
+  if (d.ok) { toast('📋 Αντιγράφηκε: ' + name, 'success'); panels.left.refresh(); panels.right?.refresh(); }
+  else toast('Σφάλμα: ' + d.error, 'error');
+}
+
+async function doDelete(dir, name) {
+  const r = await fetch('/api/delete', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ dir, name }) });
+  const d = await r.json();
+  if (d.ok) { toast('🗑 Διαγράφηκε: ' + name, 'success'); panels.left.refresh(); panels.right?.refresh(); }
+  else toast('Σφάλμα: ' + d.error, 'error');
+}
+
+function showNewFolder() {
+  showModal('Νέος Φάκελος', 'Νέος φάκελος', async name => {
+    if (!name) return;
+    const r = await fetch('/api/mkdir', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ dir: activePanel().tab.path, name }) });
+    const d = await r.json();
+    if (d.ok) { toast('📁 Δημιουργήθηκε: ' + name, 'success'); activePanel().refresh(); }
+    else toast('Σφάλμα: ' + d.error, 'error');
+  });
+}
+
+// ── Clipboard ─────────────────────────────────────────────────────────────────
+function doCopyClip() {
+  const p = activePanel();
+  if (!p.tab.selected) return;
+  clipboard = { op:'copy', srcDir: p.tab.path, name: p.tab.selected };
+  toast('📋 Αντιγραφή: ' + p.tab.selected);
+  updatePasteBtn();
+}
+
+function doCutClip() {
+  const p = activePanel();
+  if (!p.tab.selected) return;
+  clipboard = { op:'cut', srcDir: p.tab.path, name: p.tab.selected };
+  toast('✂️ Αποκοπή: ' + p.tab.selected);
+  updatePasteBtn();
+}
+
+async function doPaste() {
+  if (!clipboard) return;
+  const destDir = activePanel().tab.path;
+  if (clipboard.op === 'copy') await doCopy(clipboard.srcDir, clipboard.name, destDir);
+  else { await doMove(clipboard.srcDir, clipboard.name, destDir); clipboard = null; }
+  updatePasteBtn();
+  panels.left.refresh(); panels.right?.refresh();
+}
+
+function updatePasteBtn() {
+  document.getElementById('btn-paste').style.display = clipboard ? 'flex' : 'none';
+}
+
+// ── Upload ────────────────────────────────────────────────────────────────────
+function triggerUpload() { document.getElementById('upload-input').click(); }
+
+async function doUpload(files) {
+  const fd = new FormData();
+  for (const f of files) fd.append('files', f);
+  const r = await fetch('/api/upload?path=' + encodeURIComponent(activePanel().tab.path), { method:'POST', body:fd });
+  const d = await r.json();
+  if (d.ok) { toast('⬆ Ανέβηκαν ' + d.count + ' αρχεία', 'success'); activePanel().refresh(); }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// CONTEXT MENU
+// ══════════════════════════════════════════════════════════════════════════════
+let ctxPanelId = null, ctxItemName = null;
+
+function showCtx(event, panelId, name) {
+  event.preventDefault();
+  ctxPanelId = panelId;
+  ctxItemName = name;
+  setActivePanel(panelId);
+  panels[panelId].select(name);
+
+  const menu = document.getElementById('ctx-menu');
+  const item = panels[panelId].tab.items.find(i => i.name === name);
+  const isDir = item && item.isDir;
+
+  document.getElementById('ctx-open').textContent = ''; // reset
+  document.getElementById('ctx-open').innerHTML = `<span class="ctx-icon">${isDir?'📂':'📄'}</span> ${isDir ? 'Άνοιγμα' : 'Άνοιγμα'}`;
+  document.getElementById('ctx-paste').style.display = clipboard ? 'flex' : 'none';
+
+  menu.classList.add('open');
+
+  let x = event.clientX, y = event.clientY;
+  if (x + 220 > window.innerWidth) x = window.innerWidth - 225;
+  if (y + 280 > window.innerHeight) y = window.innerHeight - 285;
+  menu.style.left = x + 'px';
+  menu.style.top = y + 'px';
+}
+
+function showCtxEmpty(event, panelId) {
+  ctxPanelId = panelId;
+  ctxItemName = null;
+  event.preventDefault();
+  const menu = document.getElementById('ctx-menu');
+  ['ctx-open','ctx-copy','ctx-cut','ctx-rename','ctx-delete'].forEach(id => {
+    document.getElementById(id).style.display = 'none';
+  });
+  document.getElementById('ctx-paste').style.display = clipboard ? 'flex' : 'none';
+  document.getElementById('ctx-newfolder').style.display = 'flex';
+  menu.classList.add('open');
+  menu.style.left = event.clientX + 'px';
+  menu.style.top = event.clientY + 'px';
+}
+
+function closeCtx() {
+  const menu = document.getElementById('ctx-menu');
+  menu.classList.remove('open');
+  ['ctx-open','ctx-copy','ctx-cut','ctx-rename','ctx-delete','ctx-newfolder'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'flex';
+  });
+}
+
+document.getElementById('ctx-open').onclick = () => { closeCtx(); panels[ctxPanelId].open(ctxItemName); };
+document.getElementById('ctx-copy').onclick = () => { closeCtx(); clipboard = { op:'copy', srcDir: panels[ctxPanelId].tab.path, name: ctxItemName }; updatePasteBtn(); toast('📋 Αντιγραφή: ' + ctxItemName); };
+document.getElementById('ctx-cut').onclick = () => { closeCtx(); clipboard = { op:'cut', srcDir: panels[ctxPanelId].tab.path, name: ctxItemName }; updatePasteBtn(); toast('✂️ Αποκοπή: ' + ctxItemName); };
+document.getElementById('ctx-paste').onclick = () => { closeCtx(); doPaste(); };
+document.getElementById('ctx-rename').onclick = () => { closeCtx(); showModal('Μετονομασία', ctxItemName, async n => {
+  if (!n || n === ctxItemName) return;
+  const r = await fetch('/api/rename', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ dir: panels[ctxPanelId].tab.path, oldName: ctxItemName, newName: n }) });
+  const d = await r.json();
+  if (d.ok) { toast('✏️ Μετονομάστηκε σε: ' + n, 'success'); panels[ctxPanelId].refresh(); }
+  else toast('Σφάλμα: ' + d.error, 'error');
+}); };
+document.getElementById('ctx-delete').onclick = () => { closeCtx(); if (confirm('Διαγραφή "' + ctxItemName + '";')) doDelete(panels[ctxPanelId].tab.path, ctxItemName); };
+document.getElementById('ctx-newfolder').onclick = () => { closeCtx(); showNewFolder(); };
+document.getElementById('ctx-props').onclick = async () => {
+  closeCtx();
+  const r = await fetch('/api/props?path=' + encodeURIComponent(panels[ctxPanelId].tab.path + '\\' + ctxItemName));
+  const d = await r.json();
+  showModal('Ιδιότητες', null, null, `
+    <div class="props-grid">
+      <span class="pk">Όνομα:</span><span class="pv">${d.name}</span>
+      <span class="pk">Τύπος:</span><span class="pv">${d.isDir ? 'Φάκελος' : (d.ext || 'Αρχείο')}</span>
+      <span class="pk">Τοποθεσία:</span><span class="pv">${d.fullPath}</span>
+      <span class="pk">Μέγεθος:</span><span class="pv">${d.isDir ? '—' : formatSize(d.size)}</span>
+      <span class="pk">Δημιουργία:</span><span class="pv">${formatDate(d.created)}</span>
+      <span class="pk">Τροποποίηση:</span><span class="pv">${formatDate(d.modified)}</span>
+    </div>`);
+};
+
+document.addEventListener('click', e => { if (!document.getElementById('ctx-menu').contains(e.target)) closeCtx(); });
+
+// ══════════════════════════════════════════════════════════════════════════════
+// KEYBOARD SHORTCUTS
+// ══════════════════════════════════════════════════════════════════════════════
+document.addEventListener('keydown', e => {
+  if (document.activeElement.tagName === 'INPUT') return;
+  const p = activePanel();
+  if (e.key === 'F5') { e.preventDefault(); p.refresh(); }
+  if (e.key === 'F2' && p.tab.selected) { document.getElementById('ctx-rename').click(); }
+  if (e.key === 'Delete' && p.tab.selected) { if (confirm('Διαγραφή "' + p.tab.selected + '";')) doDelete(p.tab.path, p.tab.selected); }
+  if (e.ctrlKey && e.key === 'c') doCopyClip();
+  if (e.ctrlKey && e.key === 'x') doCutClip();
+  if (e.ctrlKey && e.key === 'v') doPaste();
+  if (e.key === 'Escape') { document.getElementById('img-preview').classList.remove('open'); closeCtx(); }
+  if (e.key === 'Backspace') { e.preventDefault(); p.goBack(); }
+  if (e.altKey && e.key === 'Enter' && p.tab.selected) document.getElementById('ctx-props').click();
+  if (e.ctrlKey && e.key === 't') { e.preventDefault(); p.newTab(); }
+  if (e.ctrlKey && e.key === 'w') { e.preventDefault(); if (p.tabs.length > 1) p.closeTab(p.activeTab); }
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// UI HELPERS
+// ══════════════════════════════════════════════════════════════════════════════
+function renderDrives(drives) {
+  if (!drives || !drives.length) return;
+  document.getElementById('drives-list').innerHTML = drives.map(d =>
+    `<div class="side-item" onclick="activePanel().navigate('${d.replace(/\\/g,'\\\\')}')" >
+      <span class="side-icon">💾</span>${d}
+    </div>`).join('');
+}
+
+function fileIcon(item) {
+  if (item.isDir) return '📁';
+  const e = item.ext;
+  if (IMG_EXTS.has(e)) return '🖼️';
+  if (['.mp3','.wav','.flac','.ogg','.aac'].includes(e)) return '🎵';
+  if (['.mp4','.avi','.mkv','.mov','.wmv'].includes(e)) return '🎬';
+  if (['.pdf'].includes(e)) return '📄';
+  if (['.zip','.rar','.7z','.tar','.gz'].includes(e)) return '🗜️';
+  if (['.exe','.msi'].includes(e)) return '⚙️';
+  if (['.js','.ts','.py','.html','.css','.json','.xml','.cs','.cpp','.java','.php'].includes(e)) return '💻';
+  if (['.doc','.docx'].includes(e)) return '📝';
+  if (['.xls','.xlsx'].includes(e)) return '📊';
+  if (['.ppt','.pptx'].includes(e)) return '📊';
+  if (['.txt','.log','.md'].includes(e)) return '📃';
+  return '📄';
+}
+
+function formatSize(b) {
+  if (!b) return '';
+  if (b < 1024) return b + ' B';
+  if (b < 1048576) return (b/1024).toFixed(1) + ' KB';
+  if (b < 1073741824) return (b/1048576).toFixed(1) + ' MB';
+  return (b/1073741824).toFixed(2) + ' GB';
+}
+
+function formatDate(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return d.toLocaleDateString('el-GR') + ' ' + d.toLocaleTimeString('el-GR', {hour:'2-digit',minute:'2-digit'});
+}
+
+function esc(s) { return (s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
+function safeId(s) { return (s||'').replace(/[^a-zA-Z0-9_-]/g,'_'); }
+
+function toast(msg, type='') {
+  const container = document.getElementById('toast-container');
+  const el = document.createElement('div');
+  el.className = 'toast ' + type;
+  el.textContent = msg;
+  container.appendChild(el);
+  setTimeout(() => { el.style.opacity='0'; el.style.transition='opacity 0.3s'; setTimeout(()=>el.remove(),300); }, 2800);
+}
+
+function showModal(title, defaultVal, onConfirm, customContent) {
+  const root = document.getElementById('modal-root');
+  root.innerHTML = `
+    <div class="modal-overlay" onclick="if(event.target===this)document.getElementById('modal-root').innerHTML=''">
+      <div class="modal">
+        <h3>${title}</h3>
+        ${customContent || `<label>Όνομα</label><input type="text" id="modal-inp" value="${(defaultVal||'').replace(/"/g,'&quot;')}">`}
+        <div class="modal-btns">
+          <button class="btn-cancel" onclick="document.getElementById('modal-root').innerHTML=''">Άκυρο</button>
+          ${onConfirm ? `<button class="btn-primary" id="modal-ok">OK</button>` : `<button class="btn-primary" onclick="document.getElementById('modal-root').innerHTML=''">Κλείσιμο</button>`}
+        </div>
+      </div>
+    </div>`;
+  if (onConfirm) {
+    const ok = document.getElementById('modal-ok');
+    ok.onclick = () => { const v = document.getElementById('modal-inp').value; document.getElementById('modal-root').innerHTML=''; onConfirm(v); };
+    const inp = document.getElementById('modal-inp');
+    if (inp) { inp.focus(); inp.select(); inp.onkeydown = e => { if(e.key==='Enter') ok.click(); if(e.key==='Escape') document.getElementById('modal-root').innerHTML=''; }; }
+  }
+}
+
+function showSettings() {
+  showModal('Ρυθμίσεις', null, null, `
+    <div style="font-size:12px;color:var(--text2);margin-bottom:16px">Επιλογές εμφάνισης context menu:</div>
+    <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px;cursor:pointer">
+      <input type="checkbox" checked> Εμφάνιση "Αντιγραφή"</label>
+    <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px;cursor:pointer">
+      <input type="checkbox" checked> Εμφάνιση "Αποκοπή"</label>
+    <label style="display:flex;align-items:center;gap:8px;margin-bottom:10px;cursor:pointer">
+      <input type="checkbox" checked> Εμφάνιση "Ιδιότητες"</label>
+    <label style="display:flex;align-items:center;gap:8px;margin-bottom:16px;cursor:pointer">
+      <input type="checkbox" checked> Εμφάνιση "Νέος Φάκελος"</label>
+  `);
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════════════════════
+initPanels();
+</script>
+</body>
+</html>
